@@ -8,7 +8,7 @@ export default function IntakeForm() {
     e.preventDefault();
     try {
       // This URL MUST match your backend port (5000)
-      const response = await fetch('http://localhost:5001/api/inquiry', {
+        const response = await fetch('https://trial-website-l3l1.onrender.com/api/inquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
