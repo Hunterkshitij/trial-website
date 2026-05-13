@@ -25,11 +25,13 @@ mongoose.connect(process.env.MONGO_URI)
 // Submit Inquiry Form Endpoint
 app.post('/api/inquiry', async (req, res) => {
   try {
+    console.log("Data received:", req.body); // This will show up in your Render logs!
     const { name, email, courseInterest, message } = req.body;
     const newInquiry = new Inquiry({ name, email, courseInterest, message });
     await newInquiry.save();
     res.status(201).json({ message: 'Information received successfully.' });
   } catch (error) {
+    console.error("Database Save Error:", error); // This tells us EXACTLY why it failed
     res.status(500).json({ message: 'Error submitting form' });
   }
 });
