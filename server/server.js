@@ -1,5 +1,22 @@
-// 1. Create a Schema & Model for Job Applications 
-// (You can also move this into a separate file in your 'models' folder later!)
+const express = require('express');
+const mongoose = require('mongoose'); // <-- This MUST be here, before the schema!
+const cors = require('cors');
+require('dotenv').config(); // Assuming you are using dotenv for your Atlas URI
+
+const app = express();
+
+// --- 1. Middleware ---
+app.use(cors());
+app.use(express.json());
+
+// --- 2. Database Connection ---
+// (Your existing MongoDB connection code should be here)
+mongoose.connect(process.env.MONGO_URI || 'your_mongodb_connection_string')
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+
+// --- 3. The New Schema & Model (Paste this BELOW the requires) ---
 const applicationSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   contactNo: { type: String, required: true },
@@ -13,7 +30,8 @@ const applicationSchema = new mongoose.Schema({
 
 const Application = mongoose.model('Application', applicationSchema);
 
-// 2. The Route to catch the React Form Submission
+
+// --- 4. The Route ---
 app.post('/api/apply', async (req, res) => {
   try {
     console.log("📥 Received new job application:", req.body);
@@ -28,3 +46,10 @@ app.post('/api/apply', async (req, res) => {
     res.status(500).json({ error: "Failed to submit application" });
   }
 });
+
+// --- 5. Start Server ---
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
+
