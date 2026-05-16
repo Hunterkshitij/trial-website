@@ -1,41 +1,30 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-
-// Import Models (Matching your exact lowercase filenames)
-const User = require('./models/user');
-const Inquiry = require('./models/inquiry');
-
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connected to MongoDB Atlas'))
-  .catch((err) => console.error('❌ Database connection error:', err));
-
-// ==========================================
-// API ENDPOINTS
-// ==========================================
-
-// Submit Inquiry Form Endpoint
-app.post('/api/inquiry', async (req, res) => {
-  try {
-    console.log("Data received:", req.body); // This will show up in your Render logs!
-    const { name, email, courseInterest, message } = req.body;
-    const newInquiry = new Inquiry({ name, email, courseInterest, message });
-    await newInquiry.save();
-    res.status(201).json({ message: 'Information received successfully.' });
-  } catch (error) {
-    console.error("Database Save Error:", error); // This tells us EXACTLY why it failed
-    res.status(500).json({ message: 'Error submitting form' });
-  }
+// 1. Create a Schema & Model for Job Applications 
+// (You can also move this into a separate file in your 'models' folder later!)
+const applicationSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  contactNo: { type: String, required: true },
+  address: { type: String, required: true },
+  education: { type: String, required: true },
+  github: { type: String },
+  linkedin: { type: String, required: true },
+  experience: { type: String },
+  appliedAt: { type: Date, default: Date.now }
 });
 
-// Start Server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const Application = mongoose.model('Application', applicationSchema);
+
+// 2. The Route to catch the React Form Submission
+app.post('/api/apply', async (req, res) => {
+  try {
+    console.log("📥 Received new job application:", req.body);
+    
+    // Save to MongoDB
+    const newApplication = new Application(req.body);
+    await newApplication.save();
+
+    res.status(201).json({ message: "Application successfully saved to MongoDB!" });
+  } catch (error) {
+    console.error("❌ Error saving application:", error);
+    res.status(500).json({ error: "Failed to submit application" });
+  }
+});
