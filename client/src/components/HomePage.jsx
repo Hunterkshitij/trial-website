@@ -214,7 +214,7 @@ export default function HomePage() {
 
     try {
       // Changed port to 5001 to match your backend!
-      const response = await fetch('http://localhost:5001/api/apply', {
+      const response = await fetch('https://trial-website-l3l1.onrender.com/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -241,7 +241,7 @@ export default function HomePage() {
     if (!subscribeEmail) return;
     try {
       // Changed port to 5001
-      const response = await fetch('http://localhost:5001/api/subscribe', {
+      const response = await fetch('https://trial-website-l3l1.onrender.com/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: subscribeEmail })
