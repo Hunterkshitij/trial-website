@@ -184,6 +184,15 @@ const PolicyModal = ({ title, isOpen, onClose, children }) => {
 
 // --- MAIN HOMEPAGE COMPONENT ---
 export default function HomePage() {
+  // Check URL parameters to see if we should render the Team page directly
+  const [activePage, setActivePage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('page') === 'team' ? 'team' : 'home';
+    }
+    return 'home';
+  });
+
   const [isHiringFormOpen, setIsHiringFormOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -191,7 +200,6 @@ export default function HomePage() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [statsTriggered, setStatsTriggered] = useState(false);
   
-  const sliderRef = useRef(null);
   const statsRef = useRef(null);
 
   // --- FORM STATE MANAGEMENT ---
@@ -207,19 +215,15 @@ export default function HomePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // UPDATED: Submits to your Port 5001 server
   const handleHiringSubmit = async (e) => {
     e.preventDefault();
     setFormStatus('submitting');
-
     try {
-      // Changed port to 5001 to match your backend!
       const response = await fetch('https://trial-website-l3l1.onrender.com/api/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
       if (response.ok) {
         setFormStatus('success');
         setTimeout(() => {
@@ -236,11 +240,9 @@ export default function HomePage() {
     }
   };
 
-  // UPDATED: Submits to your Port 5001 server
   const handleSubscribe = async () => {
     if (!subscribeEmail) return;
     try {
-      // Changed port to 5001
       const response = await fetch('https://trial-website-l3l1.onrender.com/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -257,6 +259,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    if (activePage !== 'home') return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) setStatsTriggered(true);
@@ -265,11 +268,9 @@ export default function HomePage() {
     );
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [activePage]);
 
-  const slideLeft = () => sliderRef.current.scrollBy({ left: -300, behavior: 'smooth' });
-  const slideRight = () => sliderRef.current.scrollBy({ left: 300, behavior: 'smooth' });
-
+  // Variables strictly preserved
   const teamMembers = [
     { name: "Aman Raghav", role: "Team Member", img: "/aman.jpg" },
     { name: "Gaurav Kumar", role: "Team Member", img: "/gaurav.JPG" },
@@ -299,220 +300,292 @@ export default function HomePage() {
     { name: "Namo", img: "/namo.jpg" }
   ];
 
+  // Router Navigators
+  const navigateTo = (page, hashId = null) => {
+    // If we are currently on the isolated Team Tab and click "Home", "About", or "Services", redirect to the main URL
+    if (activePage === 'team' && page === 'home') {
+      window.location.href = `/${hashId ? '#' + hashId : ''}`;
+      return;
+    }
+
+    setActivePage(page);
+    if (hashId) {
+      setTimeout(() => {
+        const element = document.getElementById(hashId);
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 scroll-smooth relative">
       
-      <FallingPetals />
+      {activePage === 'home' && <FallingPetals />}
 
+      {/* --- NAVBAR --- */}
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3 bg-white pr-4">
+          <div 
+            className="flex items-center gap-3 bg-white pr-4 cursor-pointer"
+            onClick={() => navigateTo('home')}
+          >
             <img src="/anisur.jpg" alt="Anisur Logo" className="h-10 w-10 object-contain rounded-md" />
             <span className="text-purple-800 font-extrabold text-2xl tracking-tight hidden sm:block">
               Anisur International
             </span>
           </div>
           <div className="hidden md:flex gap-8 text-sm font-semibold text-gray-700 items-center">
-            <a href="#about-intro" className="hover:text-purple-700 transition">About</a>
-            <a href="#about" className="hover:text-purple-700 transition">Services</a>
-            <button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-700 transition font-semibold cursor-pointer">
+            <button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-700 transition">About</button>
+            <button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-700 transition">Services</button>
+            {/* UPDATED: Team Button now opens a new tab via query parameters */}
+            <button onClick={() => window.open('?page=team', '_blank')} className={`hover:text-purple-700 transition ${activePage === 'team' ? 'text-purple-700' : ''}`}>
+              Team
+            </button>
+            <button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-700 transition cursor-pointer">
               Careers
             </button>
-            <button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-700 transition font-semibold cursor-pointer">
+            <button onClick={() => navigateTo('home', 'contact-block')} className="hover:text-purple-700 transition cursor-pointer">
               Contact us
             </button>
           </div>
         </div>
       </nav>
 
-      <section id="home" className="relative min-h-[85vh] flex items-center py-20 overflow-hidden bg-[#faf9ff]">
-        <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-          <img 
-            src="/hero-bg.jpg" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover object-right-top opacity-100" 
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/90 via-[#faf9ff]/50 to-transparent z-0"></div>
-        <div className="max-w-7xl mx-auto px-4 w-full relative z-10">
-          <div className="max-w-2xl text-left mt-8">
-            <h1 className="text-7xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
-              Anisur
-            </h1>
-            <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4">
-              Digital & Enterprise Transformation
-            </h2>
-            <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
-              Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
-            </p>
-            <a href="#about-intro" className="bg-purple-700 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform">
-              Learn More
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* ========================================= */}
+      {/* HOME PAGE                  */}
+      {/* ========================================= */}
+      {activePage === 'home' && (
+        <>
+          <section id="home" className="relative min-h-[85vh] flex items-center py-20 overflow-hidden bg-[#faf9ff]">
+            <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+              <img 
+                src="/hero-bg.jpg" 
+                alt="Hero Background" 
+                className="w-full h-full object-cover object-right-top opacity-100" 
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/90 via-[#faf9ff]/50 to-transparent z-0"></div>
+            <div className="max-w-7xl mx-auto px-4 w-full relative z-10">
+              <div className="max-w-2xl text-left mt-8">
+                <h1 className="text-7xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
+                  Anisur
+                </h1>
+                <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4">
+                  Digital & Enterprise Transformation
+                </h2>
+                <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
+                  Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
+                </p>
+                <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform">
+                  Learn More
+                </button>
+              </div>
+            </div>
+          </section>
 
-      <section id="about-intro" className="py-24 bg-gray-50 relative">
-        <div className="max-w-4xl mx-auto px-4 relative">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
-            <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full"></div>
-          </div>
+          <section id="about-intro" className="py-24 bg-gray-50 relative">
+            <div className="max-w-4xl mx-auto px-4 relative">
+              <div className="text-center mb-20">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
+                <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full"></div>
+              </div>
 
-          <div className="relative pb-32">
-            <div className="sticky top-32 z-10 w-full mb-[30vh]">
-              <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                <div className="flex flex-col md:flex-row items-start gap-8">
-                  <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
-                    <p className="text-lg text-gray-800 leading-relaxed">
-                      Anisur International is a results-driven IT solutions company committed to enabling organizations to thrive in a rapidly evolving digital landscape. With deep expertise across SAP ecosystems, modern web platforms, and high-performance mobile applications, we help businesses simplify complexity, modernize operations, and unlock sustainable growth through technology.
-                    </p>
+              <div className="relative pb-32">
+                <div className="sticky top-32 z-10 w-full mb-[30vh]">
+                  <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
+                    <div className="flex flex-col md:flex-row items-start gap-8">
+                      <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
+                        <p className="text-lg text-gray-800 leading-relaxed">
+                          Anisur International is a results-driven IT solutions company committed to enabling organizations to thrive in a rapidly evolving digital landscape. With deep expertise across SAP ecosystems, modern web platforms, and high-performance mobile applications, we help businesses simplify complexity, modernize operations, and unlock sustainable growth through technology.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sticky top-40 z-20 w-full mb-[30vh]">
+                  <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
+                    <div className="flex flex-col md:flex-row items-start gap-8">
+                      <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
+                        <p className="text-lg text-gray-800 leading-relaxed">
+                          Our approach is built on a simple principle: understand the business first, then apply the right technology. We begin by studying your processes, challenges, and objectives in detail. From initial consultation to final deployment, we ensure every solution is customized to your real operational goals rather than offering generic, one-size-fits-all systems.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sticky top-48 z-30 w-full mb-12">
+                  <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
+                    <div className="flex flex-col md:flex-row items-start gap-8">
+                      <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
+                        <p className="text-lg text-gray-900 leading-relaxed font-medium">
+                          Choosing the right technology partner is one of the most important decisions a business can make. Beyond delivering IT services, we commit to building lasting partnerships grounded in trust, accountability, and measurable outcomes. We don't just complete projects—we create digital ecosystems that empower organizations to operate smarter, respond faster, and achieve more.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+          </section>
 
-            <div className="sticky top-40 z-20 w-full mb-[30vh]">
-              <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                <div className="flex flex-col md:flex-row items-start gap-8">
-                  <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
-                    <p className="text-lg text-gray-800 leading-relaxed">
-                      Our approach is built on a simple principle: understand the business first, then apply the right technology. We begin by studying your processes, challenges, and objectives in detail. From initial consultation to final deployment, we ensure every solution is customized to your real operational goals rather than offering generic, one-size-fits-all systems.
-                    </p>
-                  </div>
+          <section ref={statsRef} className="py-20 bg-purple-700 relative z-40 shadow-2xl">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-500">
+                <div className="px-4 py-4 md:py-0">
+                  <AnimatedCounter end={100} suffix="+" trigger={statsTriggered} />
+                  <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Projects Delivered</p>
+                </div>
+                <div className="px-4 py-4 md:py-0">
+                  <AnimatedCounter end={15} suffix="+" trigger={statsTriggered} />
+                  <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Enterprise Clients</p>
+                </div>
+                <div className="px-4 py-4 md:py-0">
+                  <AnimatedCounter end={10} suffix="k+" trigger={statsTriggered} />
+                  <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Hours System Uptime</p>
                 </div>
               </div>
             </div>
+          </section>
 
-            <div className="sticky top-48 z-30 w-full mb-12">
-              <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                <div className="flex flex-col md:flex-row items-start gap-8">
-                  <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
-                    <p className="text-lg text-gray-900 leading-relaxed font-medium">
-                      Choosing the right technology partner is one of the most important decisions a business can make. Beyond delivering IT services, we commit to building lasting partnerships grounded in trust, accountability, and measurable outcomes. We don't just complete projects—we create digital ecosystems that empower organizations to operate smarter, respond faster, and achieve more.
-                    </p>
-                  </div>
+          <section id="services" className="py-20 bg-white border-t border-gray-100 relative z-40">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-gray-900 mb-4">Services</h2>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
+                  <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">⚙️</div>
+                  <h3 className="text-xl font-bold mb-2">SAP Solutions</h3>
+                  <p className="text-gray-600">Comprehensive SAP implementation, integration, and optimization services.</p>
+                </div>
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
+                  <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">💻</div>
+                  <h3 className="text-xl font-bold mb-2">Website Development</h3>
+                  <p className="text-gray-600">Modern, secure, responsive designs.</p>
+                </div>
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
+                  <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">📱</div>
+                  <h3 className="text-xl font-bold mb-2">App Development</h3>
+                  <p className="text-gray-600">Native & cross-platform applications.</p>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section ref={statsRef} className="py-20 bg-purple-700 relative z-40 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-500">
-            <div className="px-4 py-4 md:py-0">
-              <AnimatedCounter end={100} suffix="+" trigger={statsTriggered} />
-              <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Projects Delivered</p>
-            </div>
-            <div className="px-4 py-4 md:py-0">
-              <AnimatedCounter end={15} suffix="+" trigger={statsTriggered} />
-              <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Enterprise Clients</p>
-            </div>
-            <div className="px-4 py-4 md:py-0">
-              <AnimatedCounter end={10} suffix="k+" trigger={statsTriggered} />
-              <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Hours System Uptime</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="about" className="py-20 bg-white border-t border-gray-100 relative z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Services</h2>
+          <div id="clients">
+            <FloatingClients clients={clients} />
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
-              <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">⚙️</div>
-              <h3 className="text-xl font-bold mb-2">Anisur Enterprise Solutions</h3>
-              <p className="text-gray-600">Implementation, customization, support.</p>
+          {/* NEW PREMIUM CONTACT BLOCK */}
+          <section id="contact-block" className="relative min-h-[60vh] flex items-center justify-start py-20 overflow-hidden bg-gray-900">
+            {/* UPDATED: High-Quality Unsplash Architecture Image replacing hero-bg */}
+            <div className="absolute inset-0 z-0 opacity-40">
+              <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover object-center" alt="Premium Corporate Office Building" />
             </div>
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
-              <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">💻</div>
-              <h3 className="text-xl font-bold mb-2">Website Development</h3>
-              <p className="text-gray-600">Modern, secure, responsive designs.</p>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-200 transition duration-300">
-              <div className="bg-purple-700 w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6">📱</div>
-              <h3 className="text-xl font-bold mb-2">App Development</h3>
-              <p className="text-gray-600">Native & cross-platform applications.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="team" className="py-20 bg-gray-50 border-t border-purple-100 relative z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Leadership & Innovators</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
-          </div>
-
-          <div className="flex flex-col md:flex-row justify-center gap-12 mb-16">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden text-center max-w-sm w-full mx-auto md:mx-0 border border-gray-100 hover:shadow-2xl transition transform hover:-translate-y-1">
-              <img src="/sagar.JPG" alt="CEO" className="w-full h-80 object-cover bg-gray-200" />
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900">Sagar Ranga</h3>
-                <p className="text-purple-700 font-bold tracking-wide mt-1">Chief Executive Officer</p>
-                <p className="text-gray-500 text-sm mt-3">Visionary leader guiding our global IT strategy and corporate growth.</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden text-center max-w-sm w-full mx-auto md:mx-0 border border-gray-100 hover:shadow-2xl transition transform hover:-translate-y-1">
-              <img src="/anita.jpg" alt="Director" className="w-full h-80 object-cover bg-gray-200" />
-              <div className="p-6">
-                <h3 className="text-2xl font-bold text-gray-900">Anita Rani</h3>
-                <p className="text-purple-700 font-bold tracking-wide mt-1">Director of Operations</p>
-                <p className="text-gray-500 text-sm mt-3">Ensuring excellence in delivery, operations, and client success.</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-md p-8 md:p-12 border border-gray-100 relative group">
-            <h3 className="text-2xl font-bold text-center mb-10 text-gray-800">Our Core Team</h3>
             
-            <button onClick={slideLeft} className="absolute left-0 md:-left-5 top-[60%] transform -translate-y-1/2 bg-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:bg-purple-800 z-10 hidden group-hover:flex items-center justify-center text-2xl cursor-pointer transition">
-              ←
-            </button>
-            <button onClick={slideRight} className="absolute right-0 md:-right-5 top-[60%] transform -translate-y-1/2 bg-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:bg-purple-800 z-10 hidden group-hover:flex items-center justify-center text-2xl cursor-pointer transition">
-              →
-            </button>
+            <div className="max-w-7xl mx-auto px-4 w-full relative z-10 flex justify-start">
+              {/* Overlapping White Contact Card */}
+              <div className="bg-white/95 backdrop-blur-md p-10 md:p-14 max-w-lg rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Gurgaon Office</span>
+                  <span className="h-[1px] w-12 bg-gray-300"></span>
+                </div>
+                
+                {/* Elegant Serif Font to match reference style */}
+                <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mb-8" style={{ fontFamily: 'Georgia, serif' }}>
+                  Anisur International
+                </h2>
+                
+                <div className="text-gray-600 leading-loose mb-10 text-lg space-y-4">
+                  <p>
+                    3rd floor, JDM square,<br/>
+                    Gurgaon- 122102(HR)
+                  </p>
+                  <p>
+                    <a href="tel:+917082145140" className="hover:text-purple-700 transition">+91-7082145140</a><br/>
+                    <a href="mailto:Contact@anisurinternational.com" className="hover:text-purple-700 transition">Contact@anisurinternational.com</a>
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => setIsContactModalOpen(true)} 
+                  className="group flex items-center gap-3 text-sm font-bold tracking-[0.15em] text-gray-900 uppercase hover:text-purple-700 transition cursor-pointer border-b border-gray-900 hover:border-purple-700 pb-1 w-max"
+                >
+                  Contact Us <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
-            <div 
-              ref={sliderRef}
-              className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 no-scrollbar"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
+      {/* ========================================= */}
+      {/* TEAM PAGE                  */}
+      {/* ========================================= */}
+      {activePage === 'team' && (
+        <div className="min-h-screen bg-gray-50 pt-20 pb-28">
+          <div className="max-w-5xl mx-auto px-4">
+            
+            <div className="text-center mb-16">
+              <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">Leadership & Innovators</h1>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
+              <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6"></div>
+            </div>
+
+            {/* TOP ROW: 2 Columns (CEO & Director) matching the wireframe */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6">
+                <img src="/sagar.JPG" alt="CEO" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
+                <div className="text-center md:text-left">
+                  <h3 className="text-3xl font-bold text-gray-900 mb-1">Sagar Ranga</h3>
+                  <p className="text-purple-700 font-bold tracking-wide text-sm uppercase mb-3">Chief Executive Officer</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">Visionary leader guiding our global IT strategy and corporate growth.</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6">
+                <img src="/anita.jpg" alt="Director" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
+                <div className="text-center md:text-left">
+                  <h3 className="text-3xl font-bold text-gray-900 mb-1">Anita Rani</h3>
+                  <p className="text-purple-700 font-bold tracking-wide text-sm uppercase mb-3">Director of Operations</p>
+                  <p className="text-gray-500 text-sm leading-relaxed">Ensuring excellence in delivery, operations, and client success.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* BOTTOM ROWS: Wide stacked cards for the rest of the team */}
+            <div className="flex flex-col gap-6">
               {teamMembers.map((member, index) => (
-                <div key={index} className="min-w-[280px] snap-center bg-white rounded-xl border border-gray-100 hover:bg-purple-50 transition overflow-hidden shadow-sm hover:shadow-md">
-                  <img src={member.img} alt={member.name} className="w-full h-56 object-cover bg-gray-200" />
-                  <div className="p-6 text-center">
-                    <h4 className="font-bold text-gray-900 text-xl">{member.name}</h4>
-                    <p className="text-sm text-purple-700 font-semibold mt-1">{member.role}</p>
+                <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 p-5 flex items-center gap-6 group">
+                  <img src={member.img} alt={member.name} className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover bg-gray-100 border-2 border-transparent group-hover:border-purple-200 transition-colors" />
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-2xl mb-1">{member.name}</h4>
+                    <p className="text-sm text-purple-700 font-semibold uppercase tracking-wider">{member.role}</p>
                   </div>
                 </div>
               ))}
             </div>
+
           </div>
         </div>
-      </section>
+      )}
 
-      <div id="clients">
-        <FloatingClients clients={clients} />
-      </div>
-
+      {/* --- FOOTER --- */}
       <footer className="bg-[#1a1e29] text-gray-300 pt-16 pb-6 relative z-40 shadow-2xl">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div>
-            <div className="text-white font-bold text-3xl mb-6">Anisur<span className="text-purple-500">Int.</span></div>
+            <div className="text-white font-bold text-3xl mb-6">Anisur<span className="text-purple-500">International</span></div>
             <div className="flex gap-4">
               <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 transition">G</span>
               <a 
@@ -530,9 +603,11 @@ export default function HomePage() {
             <div>
               <h4 className="text-white font-bold mb-6">About Us</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#home" className="hover:text-purple-400 transition">Home</a></li>
-                <li><a href="#about-intro" className="hover:text-purple-400 transition">About us</a></li>
-                <li><a href="#about" className="hover:text-purple-400 transition">Services</a></li>
+                <li><button onClick={() => navigateTo('home')} className="hover:text-purple-400 transition">Home</button></li>
+                <li><button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-400 transition">About us</button></li>
+                <li><button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-400 transition">Services</button></li>
+                {/* UPDATED: Footer Team Button opens new tab */}
+                <li><button onClick={() => window.open('?page=team', '_blank')} className="hover:text-purple-400 transition">Team</button></li>
                 <li><button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Career</button></li>
                 <li><button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Contact us</button></li>
               </ul>
@@ -549,7 +624,7 @@ export default function HomePage() {
                   loading="lazy"
                   allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
-                  src="https://maps.google.com/maps?width=100%25&height=100%25&hl=en&q=JDM%20square,%20Gurgaon,%20Haryana&t=&z=14&ie=UTF8&iwloc=B&output=embed"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.662660143641!2d77.06076297613146!3d28.489728790578613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1921f69661b1%3A0xe5433f0e7d91cb0e!2sAnisur%20International!5e0!3m2!1sen!2sin!4v1715873918074!5m2!1sen!2sin"
                 ></iframe>
               </div>
             </div>
