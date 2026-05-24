@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// --- 1. Falling Petals Animation (UPDATED: Initial Visit Only) ---
+// --- 1. Falling Petals Animation (Initial Visit Only) ---
 const FallingPetals = () => {
   const [visible, setVisible] = useState(() => {
-    // Check if the user has already seen the petals in this session
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('petalsDropped');
     }
@@ -12,10 +11,7 @@ const FallingPetals = () => {
 
   useEffect(() => {
     if (!visible) return;
-    
-    // Mark as shown so it never triggers again during this visit
     sessionStorage.setItem('petalsDropped', 'true');
-    
     const timer = setTimeout(() => setVisible(false), 8000);
     return () => clearTimeout(timer);
   }, [visible]);
@@ -197,46 +193,46 @@ const PolicyModal = ({ title, isOpen, onClose, children }) => {
 const ServiceDetailPage = ({ data, onContactClick }) => {
   return (
     <div className="bg-white min-h-screen">
-      <div className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+      <div className="relative h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src={data.heroImg} alt={data.title} className="w-full h-full object-cover" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/60 z-0"></div>
-        <div className="relative z-10 text-center px-4 max-w-5xl">
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-lg">{data.title}</h1>
+        <div className="relative z-10 text-center px-4 max-w-5xl mt-12 md:mt-0">
+          <h1 className="text-4xl md:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-lg">{data.title}</h1>
           <div className="w-24 h-1.5 bg-purple-500 mx-auto rounded-full shadow-lg"></div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-24">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+        <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-16">
           <div className="w-full lg:w-1/2 relative group">
-            <div className="absolute -inset-4 bg-purple-100 rounded-3xl transform rotate-2 group-hover:rotate-3 transition duration-500 z-0"></div>
-            <img src={data.img1} alt="Consulting" className="relative z-10 w-full h-[400px] object-cover rounded-2xl shadow-2xl" />
+            <div className="absolute -inset-4 bg-purple-100 rounded-3xl transform rotate-2 group-hover:rotate-3 transition duration-500 z-0 hidden md:block"></div>
+            <img src={data.img1} alt="Consulting" className="relative z-10 w-full h-[300px] md:h-[400px] object-cover rounded-2xl shadow-2xl" />
           </div>
           <div className="w-full lg:w-1/2 space-y-6">
             <h2 className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Overview</h2>
-            <h3 className="text-4xl font-bold text-gray-900">{data.title}</h3>
-            <p className="text-lg text-gray-600 leading-relaxed">{data.para1}</p>
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900">{data.title}</h3>
+            <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para1}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50 py-24 border-y border-gray-100">
+      <div className="bg-gray-50 py-16 md:py-24 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-12 md:gap-16">
             <div className="w-full lg:w-1/2 relative group">
-              <div className="absolute -inset-4 bg-gray-200 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition duration-500 z-0"></div>
-              <img src={data.img2} alt="Strategy" className="relative z-10 w-full h-[400px] object-cover rounded-2xl shadow-2xl" />
+              <div className="absolute -inset-4 bg-gray-200 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition duration-500 z-0 hidden md:block"></div>
+              <img src={data.img2} alt="Strategy" className="relative z-10 w-full h-[300px] md:h-[400px] object-cover rounded-2xl shadow-2xl" />
             </div>
             <div className="w-full lg:w-1/2 space-y-6">
               <h2 className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Our Approach</h2>
-              <h3 className="text-4xl font-bold text-gray-900">Strategy & Execution</h3>
-              <p className="text-lg text-gray-600 leading-relaxed">{data.para2}</p>
-              <p className="text-lg text-gray-600 leading-relaxed">{data.para3}</p>
+              <h3 className="text-3xl md:text-4xl font-bold text-gray-900">Strategy & Execution</h3>
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para2}</p>
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para3}</p>
               <button 
                 onClick={onContactClick} 
-                className="mt-6 inline-flex items-center gap-2 bg-purple-700 text-white px-8 py-4 rounded-lg font-bold hover:bg-purple-800 transition shadow-lg hover:-translate-y-1 transform"
+                className="mt-6 inline-flex items-center justify-center w-full md:w-auto gap-2 bg-purple-700 text-white px-8 py-4 rounded-lg font-bold hover:bg-purple-800 transition shadow-lg hover:-translate-y-1 transform"
               >
                 Discuss Your Project →
               </button>
@@ -260,6 +256,9 @@ export default function HomePage() {
     }
     return 'home';
   });
+
+  // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [isHiringFormOpen, setIsHiringFormOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
@@ -401,6 +400,7 @@ export default function HomePage() {
 
   const navigateTo = (page, hashId = null) => {
     setActivePage(page);
+    setIsMobileMenuOpen(false); // Close mobile menu when navigating
     
     const newUrl = page === 'home' ? (hashId ? `/#${hashId}` : '/') : `?page=${page}`;
     window.history.pushState({}, '', newUrl);
@@ -411,6 +411,16 @@ export default function HomePage() {
         if (element) element.scrollIntoView({ behavior: 'smooth' });
       }, 150);
     }
+  };
+
+  const handleMobileCareerClick = () => {
+    setIsHiringFormOpen(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMobileContactClick = () => {
+    setIsContactModalOpen(true);
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -430,17 +440,29 @@ export default function HomePage() {
       {/* RENDERED ONCE: Uses sessionStorage to play only on initial load */}
       <FallingPetals />
 
+      {/* --- RESPONSIVE NAVBAR --- */}
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center relative">
+          
           <div 
-            className="flex items-center gap-3 bg-white pr-4 cursor-pointer"
+            className="flex items-center gap-3 bg-white cursor-pointer z-50"
             onClick={() => navigateTo('home')}
           >
-            <img src="/anisur.jpg" alt="Anisur Logo" className="h-10 w-10 object-contain rounded-md" />
-            <span className="text-purple-800 font-extrabold text-2xl tracking-tight hidden sm:block">
+            <img src="/anisur.jpg" alt="Anisur Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain rounded-md" />
+            <span className="text-purple-800 font-extrabold text-xl md:text-2xl tracking-tight">
               Anisur International
             </span>
           </div>
+
+          {/* Hamburger Icon (Mobile Only) */}
+          <button 
+            className="md:hidden text-gray-800 text-3xl z-50 focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? '×' : '≡'}
+          </button>
+
+          {/* Desktop Links (Hidden on Mobile) */}
           <div className="hidden md:flex flex-nowrap gap-8 text-sm font-semibold text-gray-700 items-center">
             <button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-700 transition whitespace-nowrap">About Us</button>
             <button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-700 transition whitespace-nowrap">Services</button>
@@ -450,11 +472,22 @@ export default function HomePage() {
             <button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
               Careers
             </button>
-            <button onClick={() => navigateTo('home', 'contact-block')} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
+            <button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
               Contact Us
             </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 flex flex-col px-6 py-6 gap-6 z-40">
+            <button onClick={() => navigateTo('home', 'about-intro')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">About Us</button>
+            <button onClick={() => navigateTo('home', 'services')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Services</button>
+            <button onClick={() => navigateTo('team')} className={`text-left font-bold text-lg hover:text-purple-700 ${activePage === 'team' ? 'text-purple-700' : 'text-gray-800'}`}>Team</button>
+            <button onClick={handleMobileCareerClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Careers</button>
+            <button onClick={handleMobileContactClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Contact Us</button>
+          </div>
+        )}
       </nav>
 
       <main key={activePage} className="animate-page-transition">
@@ -464,7 +497,7 @@ export default function HomePage() {
         {/* ========================================= */}
         {activePage === 'home' && (
           <>
-            <section id="home" className="relative min-h-[85vh] flex items-center py-20 overflow-hidden bg-[#faf9ff]">
+            <section id="home" className="relative min-h-[75vh] md:min-h-[85vh] flex items-center py-12 md:py-20 overflow-hidden bg-[#faf9ff]">
               <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
                 <img 
                   src="/hero-bg.jpg" 
@@ -472,40 +505,40 @@ export default function HomePage() {
                   className="w-full h-full object-cover object-right-top opacity-100" 
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/90 via-[#faf9ff]/50 to-transparent z-0"></div>
-              <div className="max-w-7xl mx-auto px-4 w-full relative z-10">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/95 via-[#faf9ff]/80 to-transparent z-0"></div>
+              <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10">
                 <div className="max-w-2xl text-left mt-8">
-                  <h1 className="text-7xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
+                  <h1 className="text-6xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
                     Anisur
                   </h1>
-                  <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4">
+                  <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4 leading-snug">
                     Digital & Enterprise Transformation
                   </h2>
-                  <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
+                  <p className="text-base md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
                     Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
                   </p>
-                  <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform">
+                  <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-8 md:px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform w-full md:w-auto text-center">
                     Learn More
                   </button>
                 </div>
               </div>
             </section>
 
-            <section id="about-intro" className="py-24 bg-gray-50 relative">
-              <div className="max-w-4xl mx-auto px-4 relative">
-                <div className="text-center mb-20">
-                  <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
+            <section id="about-intro" className="py-16 md:py-24 bg-gray-50 relative">
+              <div className="max-w-4xl mx-auto px-6 md:px-4 relative">
+                <div className="text-center mb-16 md:mb-20">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
                   <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full"></div>
                 </div>
 
-                <div className="relative pb-32">
-                  <div className="sticky top-32 z-10 w-full mb-[30vh]">
-                    <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-8">
+                <div className="relative pb-16 md:pb-32">
+                  <div className="md:sticky md:top-32 z-10 w-full mb-8 md:mb-[30vh]">
+                    <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                         <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
                         <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
-                          <p className="text-lg text-gray-800 leading-relaxed">
+                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
+                          <p className="text-base md:text-lg text-gray-800 leading-relaxed">
                             Anisur International is a results-driven IT solutions company committed to enabling organizations to thrive in a rapidly evolving digital landscape. With deep expertise across SAP ecosystems, modern web platforms, and high-performance mobile applications, we help businesses simplify complexity, modernize operations, and unlock sustainable growth through technology.
                           </p>
                         </div>
@@ -513,13 +546,13 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="sticky top-40 z-20 w-full mb-[30vh]">
-                    <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-8">
+                  <div className="md:sticky md:top-40 z-20 w-full mb-8 md:mb-[30vh]">
+                    <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                         <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
                         <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
-                          <p className="text-lg text-gray-800 leading-relaxed">
+                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
+                          <p className="text-base md:text-lg text-gray-800 leading-relaxed">
                             Our approach is built on a simple principle: understand the business first, then apply the right technology. We begin by studying your processes, challenges, and objectives in detail. From initial consultation to final deployment, we ensure every solution is customized to your real operational goals rather than offering generic, one-size-fits-all systems.
                           </p>
                         </div>
@@ -527,13 +560,13 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="sticky top-48 z-30 w-full mb-12">
-                    <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-2xl rounded-3xl p-8 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-8">
+                  <div className="md:sticky md:top-48 z-30 w-full mb-8 md:mb-12">
+                    <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                         <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
                         <div>
-                          <h3 className="text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
-                          <p className="text-lg text-gray-900 leading-relaxed font-medium">
+                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
+                          <p className="text-base md:text-lg text-gray-900 leading-relaxed font-medium">
                             Choosing the right technology partner is one of the most important decisions a business can make. Beyond delivering IT services, we commit to building lasting partnerships grounded in trust, accountability, and measurable outcomes. We don't just complete projects—we create digital ecosystems that empower organizations to operate smarter, respond faster, and achieve more.
                           </p>
                         </div>
@@ -544,18 +577,18 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section ref={statsRef} className="py-20 bg-purple-700 relative z-40 shadow-2xl">
-              <div className="max-w-7xl mx-auto px-4">
+            <section ref={statsRef} className="py-16 md:py-20 bg-purple-700 relative z-40 shadow-2xl">
+              <div className="max-w-7xl mx-auto px-6 md:px-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-500">
-                  <div className="px-4 py-4 md:py-0">
+                  <div className="py-4 md:py-0">
                     <AnimatedCounter end={100} suffix="+" trigger={statsTriggered} />
                     <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Projects Delivered</p>
                   </div>
-                  <div className="px-4 py-4 md:py-0">
+                  <div className="py-4 md:py-0">
                     <AnimatedCounter end={15} suffix="+" trigger={statsTriggered} />
                     <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Enterprise Clients</p>
                   </div>
-                  <div className="px-4 py-4 md:py-0">
+                  <div className="py-4 md:py-0">
                     <AnimatedCounter end={10} suffix="k+" trigger={statsTriggered} />
                     <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Hours System Uptime</p>
                   </div>
@@ -563,65 +596,67 @@ export default function HomePage() {
               </div>
             </section>
 
-            <section id="services" className="py-20 bg-white border-t border-gray-100 relative z-40">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="text-center mb-16">
-                  <h2 className="text-4xl font-bold text-gray-900 mb-4">Services</h2>
+            <section id="services" className="py-16 md:py-20 bg-white border-t border-gray-100 relative z-40">
+              <div className="max-w-7xl mx-auto px-6 md:px-4">
+                <div className="text-center mb-12 md:mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Services</h2>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
-                  <div onClick={() => navigateTo('sap')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+                  {/* MOBILE FIX: opacity-100 on mobile, hover opacity on desktop */}
+                  <div onClick={() => navigateTo('sap')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
                     <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">⚙️</div>
                     <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">SAP Solutions</h3>
-                    <p className="text-gray-600">Comprehensive SAP implementation, integration, and optimization services.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-6 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    <p className="text-gray-600 mb-2">Comprehensive SAP implementation, integration, and optimization services.</p>
+                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
                   </div>
                   
-                  <div onClick={() => navigateTo('web')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                  <div onClick={() => navigateTo('web')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
                     <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">💻</div>
                     <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">Website Development</h3>
-                    <p className="text-gray-600">Modern, secure, responsive designs.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-6 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    <p className="text-gray-600 mb-2">Modern, secure, responsive designs.</p>
+                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
                   </div>
                   
-                  <div onClick={() => navigateTo('app')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                  <div onClick={() => navigateTo('app')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
                     <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">📱</div>
                     <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">App Development</h3>
-                    <p className="text-gray-600">Native & cross-platform applications.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-6 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    <p className="text-gray-600 mb-2">Native & cross-platform applications.</p>
+                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
                   </div>
                 </div>
               </div>
             </section>
 
-            <div id="clients">
+            <div id="clients" className="hidden md:block">
+              {/* Clients section hidden on mobile for better flow, visible on desktop */}
               <FloatingClients clients={clients} />
             </div>
 
-            <section id="contact-block" className="relative min-h-[60vh] flex items-center justify-start py-20 overflow-hidden bg-gray-900">
+            <section id="contact-block" className="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-start py-16 md:py-20 overflow-hidden bg-gray-900">
               <div className="absolute inset-0 z-0 opacity-40">
                 <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover object-center" alt="Premium Corporate Office Building" />
               </div>
               
-              <div className="max-w-7xl mx-auto px-4 w-full relative z-10 flex justify-start">
-                <div className="bg-white/95 backdrop-blur-md p-10 md:p-14 max-w-lg rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+              <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10 flex justify-center md:justify-start">
+                <div className="bg-white/95 backdrop-blur-md p-8 md:p-14 max-w-lg w-full rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Gurgaon Office</span>
-                    <span className="h-[1px] w-12 bg-gray-300"></span>
+                    <span className="h-[1px] w-8 md:w-12 bg-gray-300"></span>
                   </div>
                   
-                  <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mb-8" style={{ fontFamily: 'Georgia, serif' }}>
+                  <h2 className="text-3xl md:text-5xl font-serif text-gray-900 mb-6 md:mb-8" style={{ fontFamily: 'Georgia, serif' }}>
                     Anisur International
                   </h2>
                   
-                  <div className="text-gray-600 leading-loose mb-10 text-lg space-y-4">
+                  <div className="text-gray-600 leading-loose mb-8 md:mb-10 text-base md:text-lg space-y-3 md:space-y-4">
                     <p>
                       3rd floor, JDM square,<br/>
                       Gurgaon- 122102(HR)
                     </p>
                     <p>
-                      <a href="tel:+917082145140" className="hover:text-purple-700 transition">+91-7082145140</a><br/>
-                      <a href="mailto:Contact@anisurinternational.com" className="hover:text-purple-700 transition">Contact@anisurinternational.com</a>
+                      <a href="tel:+917082145140" className="block hover:text-purple-700 transition">+91-7082145140</a>
+                      <a href="mailto:Contact@anisurinternational.com" className="block hover:text-purple-700 transition break-all">Contact@anisurinternational.com</a>
                     </p>
                   </div>
                   
@@ -641,42 +676,42 @@ export default function HomePage() {
         {/* TEAM PAGE                                 */}
         {/* ========================================= */}
         {activePage === 'team' && (
-          <div className="min-h-screen bg-gray-50 pt-20 pb-28">
-            <div className="max-w-5xl mx-auto px-4">
+          <div className="min-h-screen bg-gray-50 pt-16 md:pt-20 pb-20 md:pb-28">
+            <div className="max-w-5xl mx-auto px-6 md:px-4">
               
-              <div className="text-center mb-16">
-                <h1 className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">Leadership & Innovators</h1>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
-                <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6"></div>
+              <div className="text-center mb-12 md:mb-16">
+                <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">Leadership & Innovators</h1>
+                <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
+                <div className="w-16 md:w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6"></div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
+                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
                   <img src="/sagar.JPG" alt="CEO" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
-                  <div className="text-center md:text-left">
-                    <h3 className="text-3xl font-bold text-gray-900 mb-1">Sagar Ranga</h3>
-                    <p className="text-purple-700 font-bold tracking-wide text-sm uppercase mb-3">Chief Executive Officer</p>
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Sagar Ranga</h3>
+                    <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Chief Executive Officer</p>
                     <p className="text-gray-500 text-sm leading-relaxed">Visionary leader guiding our global IT strategy and corporate growth.</p>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6">
+                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
                   <img src="/anita.jpg" alt="Director" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
-                  <div className="text-center md:text-left">
-                    <h3 className="text-3xl font-bold text-gray-900 mb-1">Anita Rani</h3>
-                    <p className="text-purple-700 font-bold tracking-wide text-sm uppercase mb-3">Director of Operations</p>
+                  <div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Anita Rani</h3>
+                    <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Director of Operations</p>
                     <p className="text-gray-500 text-sm leading-relaxed">Ensuring excellence in delivery, operations, and client success.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4 md:gap-6">
                 {teamMembers.map((member, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 p-5 flex items-center gap-6 group">
-                    <img src={member.img} alt={member.name} className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover bg-gray-100 border-2 border-transparent group-hover:border-purple-200 transition-colors" />
+                  <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 p-4 md:p-5 flex items-center gap-4 md:gap-6 group">
+                    <img src={member.img} alt={member.name} className="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover bg-gray-100 border-2 border-transparent group-hover:border-purple-200 transition-colors" />
                     <div>
-                      <h4 className="font-bold text-gray-900 text-2xl mb-1">{member.name}</h4>
-                      <p className="text-sm text-purple-700 font-semibold uppercase tracking-wider">{member.role}</p>
+                      <h4 className="font-bold text-gray-900 text-xl md:text-2xl mb-1">{member.name}</h4>
+                      <p className="text-xs md:text-sm text-purple-700 font-semibold uppercase tracking-wider">{member.role}</p>
                     </div>
                   </div>
                 ))}
@@ -694,10 +729,10 @@ export default function HomePage() {
         {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={() => setIsContactModalOpen(true)} />}
 
         {/* --- FOOTER --- */}
-        <footer className="bg-[#1a1e29] text-gray-300 pt-16 pb-6 relative z-40 shadow-2xl">
-          <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <footer className="bg-[#1a1e29] text-gray-300 pt-12 md:pt-16 pb-6 relative z-40 shadow-2xl">
+          <div className="max-w-7xl mx-auto px-6 md:px-4 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12 mb-10 md:mb-12">
             <div>
-              <div className="text-white font-bold text-3xl mb-6">Anisur<span className="text-purple-500">International</span></div>
+              <div className="text-white font-bold text-2xl md:text-3xl mb-4 md:mb-6">Anisur<span className="text-purple-500">International</span></div>
               <div className="flex gap-4">
                 <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 transition">G</span>
                 <a 
@@ -711,9 +746,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex gap-12">
+            <div className="flex flex-col sm:flex-row gap-10 md:gap-12">
               <div>
-                <h4 className="text-white font-bold mb-6">About Us</h4>
+                <h4 className="text-white font-bold mb-4 md:mb-6">About Us</h4>
                 <ul className="space-y-3 text-sm whitespace-nowrap">
                   <li><button onClick={() => navigateTo('home')} className="hover:text-purple-400 transition">Home</button></li>
                   <li><button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-400 transition">About Us</button></li>
@@ -724,8 +759,8 @@ export default function HomePage() {
                 </ul>
               </div>
               
-              <div>
-                <h4 className="text-white font-bold mb-6">Find Us on Google</h4>
+              <div className="hidden sm:block">
+                <h4 className="text-white font-bold mb-4 md:mb-6">Find Us on Google</h4>
                 <div className="w-full max-w-[200px] h-32 bg-gray-800 rounded-lg overflow-hidden border border-gray-600 shadow-sm hover:shadow-md transition duration-300">
                   <iframe
                     title="Anisur International Location"
@@ -742,31 +777,31 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h4 className="text-white font-bold mb-6">Address</h4>
+              <h4 className="text-white font-bold mb-4 md:mb-6">Address</h4>
               <p className="text-sm leading-relaxed mb-4">
                 Anisur International<br/>
                 3rd floor, JDM square,<br/>
                 Gurgaon- 122102(HR)
               </p>
               <p className="text-sm font-semibold text-gray-400">CUSTOMER SUPPORT</p>
-              <a href="mailto:Contact@anisurinternational.com" className="text-purple-400 hover:text-purple-300 text-sm border-b border-purple-400 pb-1 transition">
+              <a href="mailto:Contact@anisurinternational.com" className="text-purple-400 hover:text-purple-300 text-sm border-b border-purple-400 pb-1 transition break-all">
                 Contact@anisurinternational.com
               </a>
               <p className="text-xs mt-2 text-gray-500">for all Enquiry</p>
             </div>
 
             <div>
-              <h4 className="text-white font-bold mb-6 text-xl">Subscribe us</h4>
+              <h4 className="text-white font-bold mb-4 md:mb-6 text-xl">Subscribe us</h4>
               <p className="text-sm mb-4 text-gray-400">Sign up now and get news about our exclusive tech insights & latest launches.</p>
               <div className="flex">
                 <input 
                   type="email" 
                   value={subscribeEmail}
                   onChange={(e) => setSubscribeEmail(e.target.value)}
-                  placeholder="Enter email address" 
-                  className="w-full bg-gray-700 text-white px-4 py-2 rounded-l outline-none focus:ring-1 focus:ring-purple-500" 
+                  placeholder="Email address" 
+                  className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 rounded-l outline-none focus:ring-1 focus:ring-purple-500 text-sm" 
                 />
-                <button onClick={handleSubscribe} className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-r font-semibold transition cursor-pointer">
+                <button onClick={handleSubscribe} className="bg-purple-700 hover:bg-purple-600 text-white px-3 md:px-4 py-2 rounded-r font-semibold transition cursor-pointer text-sm">
                   Subscribe
                 </button>
               </div>
@@ -774,8 +809,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-            <div className="flex gap-4 mb-4 md:mb-0">
+          <div className="max-w-7xl mx-auto px-6 md:px-4 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 text-center md:text-left gap-4 md:gap-0">
+            <div className="flex flex-wrap justify-center gap-4">
               <button onClick={() => setIsPrivacyModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Privacy Policy</button>
               <button onClick={() => setIsCookieModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Cookie Policy</button>
               <button onClick={() => setIsTermsModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Terms and Conditions</button>
@@ -788,21 +823,21 @@ export default function HomePage() {
 
       </main>
 
-      {/* FLOATING SOCIAL POPUPS */}
-      <div className="fixed right-6 bottom-6 flex flex-col gap-4 z-50">
+      {/* FLOATING SOCIAL POPUPS (Slightly smaller on mobile) */}
+      <div className="fixed right-4 bottom-4 md:right-6 md:bottom-6 flex flex-col gap-3 md:gap-4 z-50">
         <a 
           href="https://www.linkedin.com/company/anisur-international/" 
           target="_blank" 
           rel="noreferrer" 
-          className="bg-blue-600 text-white w-14 h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center font-bold text-xl"
+          className="bg-blue-600 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center font-bold text-lg md:text-xl"
         >
           in
         </a>
         <a 
-          href="https://wa.me/917082145140?text=Hello%20Anisur%20International!" 
+          href="https://wa.me/919911309695?text=Hello%20Anisur%20International!" 
           target="_blank" 
           rel="noreferrer" 
-          className="bg-green-500 text-white w-14 h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center text-2xl"
+          className="bg-green-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center text-xl md:text-2xl"
         >
           💬
         </a>
@@ -812,13 +847,13 @@ export default function HomePage() {
       {isHiringFormOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative max-h-[90vh] overflow-y-auto">
-            <button onClick={() => setIsHiringFormOpen(false)} className="absolute top-4 right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
+            <button onClick={() => setIsHiringFormOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
-            <div className="p-8 md:p-12">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">Join Our Team</h2>
-                <p className="text-gray-500">Submit your details below to apply for open IT positions.</p>
+            <div className="p-6 md:p-12">
+              <div className="text-center mb-6 md:mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Join Our Team</h2>
+                <p className="text-sm md:text-base text-gray-500">Submit your details below to apply for open IT positions.</p>
               </div>
 
               {formStatus === 'success' ? (
@@ -828,41 +863,41 @@ export default function HomePage() {
                   <p className="text-gray-600">Thank you for applying. We will review your profile and get back to you shortly.</p>
                 </div>
               ) : (
-                <form onSubmit={handleHiringSubmit} className="space-y-6">
+                <form onSubmit={handleHiringSubmit} className="space-y-4 md:space-y-6">
                   {formStatus === 'error' && <p className="text-red-500 text-sm text-center">Something went wrong. Please check your server connection.</p>}
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
-                      <input required type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="John Doe" />
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+                      <input required type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="John Doe" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">Contact No.</label>
-                      <input required type="tel" name="contactNo" value={formData.contactNo} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="+91 98765 43210" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Address</label>
-                    <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="City, State" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Last Education</label>
-                    <input required type="text" name="education" value={formData.education} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="e.g. B.Tech in Computer Science" />
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">GitHub Profile Link</label>
-                      <input type="url" name="github" value={formData.github} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="https://github.com/..." />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1">LinkedIn Profile Link</label>
-                      <input required type="url" name="linkedin" value={formData.linkedin} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="https://linkedin.com/in/..." />
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Contact No.</label>
+                      <input required type="tel" name="contactNo" value={formData.contactNo} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="+91 98765 43210" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Experience (if any)</label>
-                    <textarea name="experience" value={formData.experience} onChange={handleInputChange} rows="3" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition" placeholder="Briefly describe your past roles and tech stack..."></textarea>
+                    <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Address</label>
+                    <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="City, State" />
                   </div>
-                  <button type="submit" disabled={formStatus === 'submitting'} className="w-full bg-purple-700 text-white font-bold py-4 rounded-lg hover:bg-purple-800 transition shadow-md text-lg cursor-pointer flex justify-center items-center">
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Last Education</label>
+                    <input required type="text" name="education" value={formData.education} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="e.g. B.Tech in Computer Science" />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                    <div>
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">GitHub Profile Link</label>
+                      <input type="url" name="github" value={formData.github} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="https://github.com/..." />
+                    </div>
+                    <div>
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">LinkedIn Profile Link</label>
+                      <input required type="url" name="linkedin" value={formData.linkedin} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="https://linkedin.com/in/..." />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Experience (if any)</label>
+                    <textarea name="experience" value={formData.experience} onChange={handleInputChange} rows="3" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="Briefly describe your past roles and tech stack..."></textarea>
+                  </div>
+                  <button type="submit" disabled={formStatus === 'submitting'} className="w-full bg-purple-700 text-white font-bold py-3 md:py-4 rounded-lg hover:bg-purple-800 transition shadow-md text-base md:text-lg cursor-pointer flex justify-center items-center">
                     {formStatus === 'submitting' ? 'Submitting...' : 'Submit Application'}
                   </button>
                 </form>
@@ -876,31 +911,31 @@ export default function HomePage() {
       {isContactModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
-            <button onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
+            <button onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
             <div className="p-8 md:p-12 text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Contact Us</h2>
-              <div className="space-y-5 text-lg text-gray-700">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Contact Us</h2>
+              <div className="space-y-5 text-base md:text-lg text-gray-700">
                 <div>
-                  <p className="font-extrabold text-2xl text-purple-800 tracking-tight">Anisur International</p>
-                  <p className="mt-2 text-gray-600">
+                  <p className="font-extrabold text-xl md:text-2xl text-purple-800 tracking-tight">Anisur International</p>
+                  <p className="mt-2 text-sm md:text-base text-gray-600">
                     3rd floor, JDM square,<br/>
                     Gurgaon- 122102(HR)
                   </p>
                 </div>
                 <div className="pt-4 border-t border-gray-100">
-                  <p className="font-semibold text-gray-500 text-sm uppercase tracking-wider mb-1">Phone</p>
-                  <a href="tel:+917082145140" className="text-purple-700 font-bold text-xl hover:text-purple-900 transition">
+                  <p className="font-semibold text-gray-500 text-xs md:text-sm uppercase tracking-wider mb-1">Phone</p>
+                  <a href="tel:+917082145140" className="text-purple-700 font-bold text-lg md:text-xl hover:text-purple-900 transition">
                     +91-7082145140
                   </a>
                 </div>
                 <div className="pt-4 border-t border-gray-100">
-                  <p className="font-semibold text-gray-500 text-sm uppercase tracking-wider mb-2">Email</p>
-                  <a href="mailto:Hr@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition mb-1">
+                  <p className="font-semibold text-gray-500 text-xs md:text-sm uppercase tracking-wider mb-2">Email</p>
+                  <a href="mailto:Hr@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition mb-1 text-sm md:text-base break-all">
                     Hr@anisurinternational.com
                   </a>
-                  <a href="mailto:Contact@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition">
+                  <a href="mailto:Contact@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition text-sm md:text-base break-all">
                     Contact@anisurinternational.com
                   </a>
                 </div>
