@@ -1,4 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- ANIMATION VARIANTS (High-Quality Easing) ---
+const easing = [0.6, -0.05, 0.01, 0.99];
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: easing } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 }
+  }
+};
+
+const pageTransition = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easing } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.4, ease: easing } }
+};
 
 // --- 1. Falling Petals Animation (Initial Visit Only) ---
 const FallingPetals = () => {
@@ -149,12 +172,15 @@ const FloatingClients = ({ clients }) => {
           50% { transform: translateY(-15px) rotate(2deg); }
         }
       `}</style>
-      <div className="z-10 text-center relative pointer-events-none px-4">
+      <motion.div 
+        initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
+        className="z-10 text-center relative pointer-events-none px-4"
+      >
         <h2 className="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight drop-shadow-2xl">
           Our Clients
         </h2>
         <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6 shadow-lg"></div>
-      </div>
+      </motion.div>
       {clients.map((client, i) => {
         const pos = positions[i % positions.length];
         return (
@@ -173,74 +199,89 @@ const FloatingClients = ({ clients }) => {
 const PolicyModal = ({ title, isOpen, onClose, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl relative max-h-[90vh] flex flex-col">
-        <button onClick={onClose} className="absolute top-4 right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
-          ×
-        </button>
-        <div className="p-8 md:p-12 overflow-y-auto no-scrollbar">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 text-center">{title}</h2>
-          <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base text-left">
-            {children}
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"
+      >
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ duration: 0.3, ease: easing }}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl relative max-h-[90vh] flex flex-col"
+        >
+          <button onClick={onClose} className="absolute top-4 right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
+            ×
+          </button>
+          <div className="p-8 md:p-12 overflow-y-auto no-scrollbar">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 text-center">{title}</h2>
+            <div className="space-y-4 text-gray-700 leading-relaxed text-sm md:text-base text-left">
+              {children}
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
 // --- 5. Reusable Premium Service Detail Page Component ---
 const ServiceDetailPage = ({ data, onContactClick }) => {
   return (
-    <div className="bg-white min-h-screen">
+    <motion.div 
+      variants={pageTransition} initial="hidden" animate="visible" exit="exit"
+      className="bg-white min-h-screen"
+    >
       <div className="relative h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
+        <motion.div 
+          initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ duration: 1.5, ease: 'easeOut' }}
+          className="absolute inset-0 z-0"
+        >
           <img src={data.heroImg} alt={data.title} className="w-full h-full object-cover" />
-        </div>
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/60 z-0"></div>
-        <div className="relative z-10 text-center px-4 max-w-5xl mt-12 md:mt-0">
-          <h1 className="text-4xl md:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-lg">{data.title}</h1>
-          <div className="w-24 h-1.5 bg-purple-500 mx-auto rounded-full shadow-lg"></div>
-        </div>
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="relative z-10 text-center px-4 max-w-5xl mt-12 md:mt-0">
+          <motion.h1 variants={fadeInUp} className="text-4xl md:text-7xl font-black text-white tracking-tight mb-6 drop-shadow-lg">{data.title}</motion.h1>
+          <motion.div variants={fadeInUp} className="w-24 h-1.5 bg-purple-500 mx-auto rounded-full shadow-lg"></motion.div>
+        </motion.div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-16">
-          <div className="w-full lg:w-1/2 relative group">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="w-full lg:w-1/2 relative group">
             <div className="absolute -inset-4 bg-purple-100 rounded-3xl transform rotate-2 group-hover:rotate-3 transition duration-500 z-0 hidden md:block"></div>
             <img src={data.img1} alt="Consulting" className="relative z-10 w-full h-[300px] md:h-[400px] object-cover rounded-2xl shadow-2xl" />
-          </div>
-          <div className="w-full lg:w-1/2 space-y-6">
-            <h2 className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Overview</h2>
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900">{data.title}</h3>
-            <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para1}</p>
-          </div>
+          </motion.div>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="w-full lg:w-1/2 space-y-6">
+            <motion.h2 variants={fadeInUp} className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Overview</motion.h2>
+            <motion.h3 variants={fadeInUp} className="text-3xl md:text-4xl font-bold text-gray-900">{data.title}</motion.h3>
+            <motion.p variants={fadeInUp} className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para1}</motion.p>
+          </motion.div>
         </div>
       </div>
 
       <div className="bg-gray-50 py-16 md:py-24 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col lg:flex-row-reverse items-center gap-12 md:gap-16">
-            <div className="w-full lg:w-1/2 relative group">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="w-full lg:w-1/2 relative group">
               <div className="absolute -inset-4 bg-gray-200 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition duration-500 z-0 hidden md:block"></div>
               <img src={data.img2} alt="Strategy" className="relative z-10 w-full h-[300px] md:h-[400px] object-cover rounded-2xl shadow-2xl" />
-            </div>
-            <div className="w-full lg:w-1/2 space-y-6">
-              <h2 className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Our Approach</h2>
-              <h3 className="text-3xl md:text-4xl font-bold text-gray-900">Strategy & Execution</h3>
-              <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para2}</p>
-              <p className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para3}</p>
-              <button 
+            </motion.div>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={staggerContainer} className="w-full lg:w-1/2 space-y-6">
+              <motion.h2 variants={fadeInUp} className="text-sm font-bold text-purple-600 tracking-[0.2em] uppercase">Our Approach</motion.h2>
+              <motion.h3 variants={fadeInUp} className="text-3xl md:text-4xl font-bold text-gray-900">Strategy & Execution</motion.h3>
+              <motion.p variants={fadeInUp} className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para2}</motion.p>
+              <motion.p variants={fadeInUp} className="text-base md:text-lg text-gray-600 leading-relaxed">{data.para3}</motion.p>
+              <motion.button 
+                variants={fadeInUp}
                 onClick={onContactClick} 
                 className="mt-6 inline-flex items-center justify-center w-full md:w-auto gap-2 bg-purple-700 text-white px-8 py-4 rounded-lg font-bold hover:bg-purple-800 transition shadow-lg hover:-translate-y-1 transform"
               >
                 Discuss Your Project →
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -257,9 +298,7 @@ export default function HomePage() {
     return 'home';
   });
 
-  // Mobile Menu State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   const [isHiringFormOpen, setIsHiringFormOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -270,7 +309,7 @@ export default function HomePage() {
   const statsRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    fullName: '', contactNo: '', address: '', education: '', github: '', linkedin: '', experience: ''
+    fullName: '', email: '', contactNo: '', address: '', education: '', github: '', linkedin: '', experience: ''
   });
   const [formStatus, setFormStatus] = useState(null); 
   const [subscribeEmail, setSubscribeEmail] = useState('');
@@ -291,9 +330,9 @@ export default function HomePage() {
         setFormStatus('success');
         setTimeout(() => {
           setFormStatus(null);
-          setFormData({fullName: '', contactNo: '', address: '', education: '', github: '', linkedin: '', experience: ''});
+          setFormData({fullName: '', email: '', contactNo: '', address: '', education: '', github: '', linkedin: '', experience: ''});
           setIsHiringFormOpen(false);
-        }, 2000);
+        }, 3000); 
       } else {
         setFormStatus('error');
       }
@@ -400,7 +439,7 @@ export default function HomePage() {
 
   const navigateTo = (page, hashId = null) => {
     setActivePage(page);
-    setIsMobileMenuOpen(false); // Close mobile menu when navigating
+    setIsMobileMenuOpen(false); 
     
     const newUrl = page === 'home' ? (hashId ? `/#${hashId}` : '/') : `?page=${page}`;
     window.history.pushState({}, '', newUrl);
@@ -426,21 +465,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 scroll-smooth relative">
       
-      {/* GLOBAL TRANSITION ANIMATION STYLES */}
-      <style>{`
-        @keyframes pageFadeIn {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-page-transition {
-          animation: pageFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-      `}</style>
-
-      {/* RENDERED ONCE: Uses sessionStorage to play only on initial load */}
       <FallingPetals />
 
-      {/* --- RESPONSIVE NAVBAR --- */}
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center relative">
           
@@ -454,7 +480,6 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* Hamburger Icon (Mobile Only) */}
           <button 
             className="md:hidden text-gray-800 text-3xl z-50 focus:outline-none"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -462,7 +487,6 @@ export default function HomePage() {
             {isMobileMenuOpen ? '×' : '≡'}
           </button>
 
-          {/* Desktop Links (Hidden on Mobile) */}
           <div className="hidden md:flex flex-nowrap gap-8 text-sm font-semibold text-gray-700 items-center">
             <button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-700 transition whitespace-nowrap">About Us</button>
             <button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-700 transition whitespace-nowrap">Services</button>
@@ -478,352 +502,376 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 flex flex-col px-6 py-6 gap-6 z-40">
-            <button onClick={() => navigateTo('home', 'about-intro')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">About Us</button>
-            <button onClick={() => navigateTo('home', 'services')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Services</button>
-            <button onClick={() => navigateTo('team')} className={`text-left font-bold text-lg hover:text-purple-700 ${activePage === 'team' ? 'text-purple-700' : 'text-gray-800'}`}>Team</button>
-            <button onClick={handleMobileCareerClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Careers</button>
-            <button onClick={handleMobileContactClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Contact Us</button>
-          </div>
-        )}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 flex flex-col px-6 py-6 gap-6 z-40 overflow-hidden"
+            >
+              <button onClick={() => navigateTo('home', 'about-intro')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">About Us</button>
+              <button onClick={() => navigateTo('home', 'services')} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Services</button>
+              <button onClick={() => navigateTo('team')} className={`text-left font-bold text-lg hover:text-purple-700 ${activePage === 'team' ? 'text-purple-700' : 'text-gray-800'}`}>Team</button>
+              <button onClick={handleMobileCareerClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Careers</button>
+              <button onClick={handleMobileContactClick} className="text-left font-bold text-gray-800 text-lg hover:text-purple-700">Contact Us</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
-      <main key={activePage} className="animate-page-transition">
-        
-        {/* ========================================= */}
-        {/* HOME PAGE                                 */}
-        {/* ========================================= */}
-        {activePage === 'home' && (
-          <>
-            <section id="home" className="relative min-h-[75vh] md:min-h-[85vh] flex items-center py-12 md:py-20 overflow-hidden bg-[#faf9ff]">
-              <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
-                <img 
-                  src="/hero-bg.jpg" 
-                  alt="Hero Background" 
-                  className="w-full h-full object-cover object-right-top opacity-100" 
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/95 via-[#faf9ff]/80 to-transparent z-0"></div>
-              <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10">
-                <div className="max-w-2xl text-left mt-8">
-                  <h1 className="text-6xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
-                    Anisur
-                  </h1>
-                  <h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4 leading-snug">
-                    Digital & Enterprise Transformation
-                  </h2>
-                  <p className="text-base md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
-                    Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
-                  </p>
-                  <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-8 md:px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform w-full md:w-auto text-center">
-                    Learn More
-                  </button>
+      {/* --- FRAMER MOTION PAGE WRAPPER --- */}
+      <AnimatePresence mode="wait">
+        <motion.main 
+          key={activePage}
+          variants={pageTransition}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          
+          {/* ========================================= */}
+          {/* HOME PAGE                                 */}
+          {/* ========================================= */}
+          {activePage === 'home' && (
+            <>
+              <section id="home" className="relative min-h-[75vh] md:min-h-[85vh] flex items-center py-12 md:py-20 overflow-hidden bg-[#faf9ff]">
+                <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+                  <motion.img 
+                    initial={{ scale: 1.1, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    src="/hero-bg.jpg" 
+                    alt="Hero Background" 
+                    className="w-full h-full object-cover object-right-top" 
+                  />
                 </div>
-              </div>
-            </section>
-
-            <section id="about-intro" className="py-16 md:py-24 bg-gray-50 relative">
-              <div className="max-w-4xl mx-auto px-6 md:px-4 relative">
-                <div className="text-center mb-16 md:mb-20">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
-                  <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#faf9ff]/95 via-[#faf9ff]/80 to-transparent z-0"></div>
+                <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10">
+                  <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="max-w-2xl text-left mt-8">
+                    <motion.h1 variants={fadeInUp} className="text-6xl md:text-[8rem] font-black text-[#4c1d95] mb-2 tracking-tighter leading-none drop-shadow-sm">
+                      Anisur
+                    </motion.h1>
+                    <motion.h2 variants={fadeInUp} className="text-2xl md:text-4xl font-bold text-gray-900 mb-6 mt-4 leading-snug">
+                      Digital & Enterprise Transformation
+                    </motion.h2>
+                    <motion.p variants={fadeInUp} className="text-base md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
+                      Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
+                    </motion.p>
+                    <motion.div variants={fadeInUp}>
+                      <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-8 md:px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform w-full md:w-auto text-center">
+                        Learn More
+                      </button>
+                    </motion.div>
+                  </motion.div>
                 </div>
+              </section>
 
-                <div className="relative pb-16 md:pb-32">
-                  <div className="md:sticky md:top-32 z-10 w-full mb-8 md:mb-[30vh]">
-                    <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
-                        <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
-                          <p className="text-base md:text-lg text-gray-800 leading-relaxed">
-                            Anisur International is a results-driven IT solutions company committed to enabling organizations to thrive in a rapidly evolving digital landscape. With deep expertise across SAP ecosystems, modern web platforms, and high-performance mobile applications, we help businesses simplify complexity, modernize operations, and unlock sustainable growth through technology.
-                          </p>
+              <section id="about-intro" className="py-16 md:py-24 bg-gray-50 relative">
+                <div className="max-w-4xl mx-auto px-6 md:px-4 relative">
+                  <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="text-center mb-16 md:mb-20">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Philosophy</h2>
+                    <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full"></div>
+                  </motion.div>
+
+                  <div className="relative pb-16 md:pb-32">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-32 z-10 w-full mb-8 md:mb-[30vh]">
+                      <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
+                          <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
+                          <div>
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Empowering Digital Transformation</h3>
+                            <p className="text-base md:text-lg text-gray-800 leading-relaxed">
+                              Anisur International is a results-driven IT solutions company committed to enabling organizations to thrive in a rapidly evolving digital landscape. With deep expertise across SAP ecosystems, modern web platforms, and high-performance mobile applications, we help businesses simplify complexity, modernize operations, and unlock sustainable growth through technology.
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </motion.div>
 
-                  <div className="md:sticky md:top-40 z-20 w-full mb-8 md:mb-[30vh]">
-                    <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
-                        <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
-                          <p className="text-base md:text-lg text-gray-800 leading-relaxed">
-                            Our approach is built on a simple principle: understand the business first, then apply the right technology. We begin by studying your processes, challenges, and objectives in detail. From initial consultation to final deployment, we ensure every solution is customized to your real operational goals rather than offering generic, one-size-fits-all systems.
-                          </p>
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-40 z-20 w-full mb-8 md:mb-[30vh]">
+                      <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
+                          <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
+                          <div>
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">A Business-First Approach</h3>
+                            <p className="text-base md:text-lg text-gray-800 leading-relaxed">
+                              Our approach is built on a simple principle: understand the business first, then apply the right technology. We begin by studying your processes, challenges, and objectives in detail. From initial consultation to final deployment, we ensure every solution is customized to your real operational goals rather than offering generic, one-size-fits-all systems.
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </motion.div>
 
-                  <div className="md:sticky md:top-48 z-30 w-full mb-8 md:mb-12">
-                    <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
-                      <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
-                        <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
-                          <p className="text-base md:text-lg text-gray-900 leading-relaxed font-medium">
-                            Choosing the right technology partner is one of the most important decisions a business can make. Beyond delivering IT services, we commit to building lasting partnerships grounded in trust, accountability, and measurable outcomes. We don't just complete projects—we create digital ecosystems that empower organizations to operate smarter, respond faster, and achieve more.
-                          </p>
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-48 z-30 w-full mb-8 md:mb-12">
+                      <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
+                          <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
+                          <div>
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Long-Term Partnerships</h3>
+                            <p className="text-base md:text-lg text-gray-900 leading-relaxed font-medium">
+                              Choosing the right technology partner is one of the most important decisions a business can make. Beyond delivering IT services, we commit to building lasting partnerships grounded in trust, accountability, and measurable outcomes. We don't just complete projects—we create digital ecosystems that empower organizations to operate smarter, respond faster, and achieve more.
+                            </p>
+                          </div>
                         </div>
                       </div>
+                    </motion.div>
+                  </div>
+                </div>
+              </section>
+
+              <section ref={statsRef} className="py-16 md:py-20 bg-purple-700 relative z-40 shadow-2xl">
+                <div className="max-w-7xl mx-auto px-6 md:px-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-500">
+                    <div className="py-4 md:py-0">
+                      <AnimatedCounter end={100} suffix="+" trigger={statsTriggered} />
+                      <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Projects Delivered</p>
+                    </div>
+                    <div className="py-4 md:py-0">
+                      <AnimatedCounter end={15} suffix="+" trigger={statsTriggered} />
+                      <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Enterprise Clients</p>
+                    </div>
+                    <div className="py-4 md:py-0">
+                      <AnimatedCounter end={10} suffix="k+" trigger={statsTriggered} />
+                      <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Hours System Uptime</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            <section ref={statsRef} className="py-16 md:py-20 bg-purple-700 relative z-40 shadow-2xl">
-              <div className="max-w-7xl mx-auto px-6 md:px-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-purple-500">
-                  <div className="py-4 md:py-0">
-                    <AnimatedCounter end={100} suffix="+" trigger={statsTriggered} />
-                    <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Projects Delivered</p>
-                  </div>
-                  <div className="py-4 md:py-0">
-                    <AnimatedCounter end={15} suffix="+" trigger={statsTriggered} />
-                    <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Enterprise Clients</p>
-                  </div>
-                  <div className="py-4 md:py-0">
-                    <AnimatedCounter end={10} suffix="k+" trigger={statsTriggered} />
-                    <p className="text-purple-200 font-bold mt-2 uppercase tracking-wider text-sm">Hours System Uptime</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+              <section id="services" className="py-16 md:py-20 bg-white border-t border-gray-100 relative z-40">
+                <div className="max-w-7xl mx-auto px-6 md:px-4">
+                  <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-12 md:mb-16">
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Services</h2>
+                  </motion.div>
 
-            <section id="services" className="py-16 md:py-20 bg-white border-t border-gray-100 relative z-40">
-              <div className="max-w-7xl mx-auto px-6 md:px-4">
-                <div className="text-center mb-12 md:mb-16">
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Services</h2>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-                  {/* MOBILE FIX: opacity-100 on mobile, hover opacity on desktop */}
-                  <div onClick={() => navigateTo('sap')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
-                    <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">⚙️</div>
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">SAP Solutions</h3>
-                    <p className="text-gray-600 mb-2">Comprehensive SAP implementation, integration, and optimization services.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
-                  </div>
-                  
-                  <div onClick={() => navigateTo('web')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
-                    <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">💻</div>
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">Website Development</h3>
-                    <p className="text-gray-600 mb-2">Modern, secure, responsive designs.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
-                  </div>
-                  
-                  <div onClick={() => navigateTo('app')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
-                    <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">📱</div>
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">App Development</h3>
-                    <p className="text-gray-600 mb-2">Native & cross-platform applications.</p>
-                    <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <div id="clients" className="hidden md:block">
-              {/* Clients section hidden on mobile for better flow, visible on desktop */}
-              <FloatingClients clients={clients} />
-            </div>
-
-            <section id="contact-block" className="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-start py-16 md:py-20 overflow-hidden bg-gray-900">
-              <div className="absolute inset-0 z-0 opacity-40">
-                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover object-center" alt="Premium Corporate Office Building" />
-              </div>
-              
-              <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10 flex justify-center md:justify-start">
-                <div className="bg-white/95 backdrop-blur-md p-8 md:p-14 max-w-lg w-full rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Gurgaon Office</span>
-                    <span className="h-[1px] w-8 md:w-12 bg-gray-300"></span>
-                  </div>
-                  
-                  <h2 className="text-3xl md:text-5xl font-serif text-gray-900 mb-6 md:mb-8" style={{ fontFamily: 'Georgia, serif' }}>
-                    Anisur International
-                  </h2>
-                  
-                  <div className="text-gray-600 leading-loose mb-8 md:mb-10 text-base md:text-lg space-y-3 md:space-y-4">
-                    <p>
-                      3rd floor, JDM square,<br/>
-                      Gurgaon- 122102(HR)
-                    </p>
-                    <p>
-                      <a href="tel:+917082145140" className="block hover:text-purple-700 transition">+91-7082145140</a>
-                      <a href="mailto:Contact@anisurinternational.com" className="block hover:text-purple-700 transition break-all">Contact@anisurinternational.com</a>
-                    </p>
-                  </div>
-                  
-                  <button 
-                    onClick={() => setIsContactModalOpen(true)} 
-                    className="group flex items-center gap-3 text-sm font-bold tracking-[0.15em] text-gray-900 uppercase hover:text-purple-700 transition cursor-pointer border-b border-gray-900 hover:border-purple-700 pb-1 w-max"
+                  <motion.div 
+                    variants={staggerContainer} 
+                    initial="hidden" 
+                    whileInView="visible" 
+                    viewport={{ once: true, margin: "-50px" }}
+                    className="grid md:grid-cols-3 gap-6 md:gap-8"
                   >
-                    Contact Us <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+                    <motion.div variants={fadeInUp} onClick={() => navigateTo('sap')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                      <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">⚙️</div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">SAP Solutions</h3>
+                      <p className="text-gray-600 mb-2">Comprehensive SAP implementation, integration, and optimization services.</p>
+                      <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    </motion.div>
+                    
+                    <motion.div variants={fadeInUp} onClick={() => navigateTo('web')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                      <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">💻</div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">Website Development</h3>
+                      <p className="text-gray-600 mb-2">Modern, secure, responsive designs.</p>
+                      <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    </motion.div>
+                    
+                    <motion.div variants={fadeInUp} onClick={() => navigateTo('app')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                      <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">📱</div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">App Development</h3>
+                      <p className="text-gray-600 mb-2">Native & cross-platform applications.</p>
+                      <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    </motion.div>
+                  </motion.div>
+                </div>
+              </section>
+
+              <div id="clients" className="hidden md:block">
+                <FloatingClients clients={clients} />
+              </div>
+
+              <section id="contact-block" className="relative min-h-[50vh] md:min-h-[60vh] flex items-center justify-start py-16 md:py-20 overflow-hidden bg-gray-900">
+                <div className="absolute inset-0 z-0 opacity-40">
+                  <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2000" className="w-full h-full object-cover object-center" alt="Premium Corporate Office Building" />
+                </div>
+                
+                <div className="max-w-7xl mx-auto px-6 md:px-4 w-full relative z-10 flex justify-center md:justify-start">
+                  <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="bg-white/95 backdrop-blur-md p-8 md:p-14 max-w-lg w-full rounded-sm shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Gurgaon Office</span>
+                      <span className="h-[1px] w-8 md:w-12 bg-gray-300"></span>
+                    </div>
+                    
+                    <h2 className="text-3xl md:text-5xl font-serif text-gray-900 mb-6 md:mb-8" style={{ fontFamily: 'Georgia, serif' }}>
+                      Anisur International
+                    </h2>
+                    
+                    <div className="text-gray-600 leading-loose mb-8 md:mb-10 text-base md:text-lg space-y-3 md:space-y-4">
+                      <p>
+                        3rd floor, JDM square,<br/>
+                        Gurgaon- 122102(HR)
+                      </p>
+                      <p>
+                        <a href="tel:+917082145140" className="block hover:text-purple-700 transition">+91-7082145140</a>
+                        <a href="mailto:Contact@anisurinternational.com" className="block hover:text-purple-700 transition break-all">Contact@anisurinternational.com</a>
+                      </p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setIsContactModalOpen(true)} 
+                      className="group flex items-center gap-3 text-sm font-bold tracking-[0.15em] text-gray-900 uppercase hover:text-purple-700 transition cursor-pointer border-b border-gray-900 hover:border-purple-700 pb-1 w-max"
+                    >
+                      Contact Us <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+                    </button>
+                  </motion.div>
+                </div>
+              </section>
+            </>
+          )}
+
+          {/* ========================================= */}
+          {/* TEAM PAGE                                 */}
+          {/* ========================================= */}
+          {activePage === 'team' && (
+            <div className="min-h-screen bg-gray-50 pt-16 md:pt-20 pb-20 md:pb-28">
+              <div className="max-w-5xl mx-auto px-6 md:px-4">
+                
+                <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="text-center mb-12 md:mb-16">
+                  <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">Leadership & Innovators</h1>
+                  <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
+                  <div className="w-16 md:w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6"></div>
+                </motion.div>
+
+                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
+                  <motion.div variants={fadeInUp} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
+                    <img src="/sagar.JPG" alt="CEO" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Sagar Ranga</h3>
+                      <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Chief Executive Officer</p>
+                      <p className="text-gray-500 text-sm leading-relaxed">Visionary leader guiding our global IT strategy and corporate growth.</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div variants={fadeInUp} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
+                    <img src="/anita.jpg" alt="Director" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Anita Rani</h3>
+                      <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Director of Operations</p>
+                      <p className="text-gray-500 text-sm leading-relaxed">Ensuring excellence in delivery, operations, and client success.</p>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex flex-col gap-4 md:gap-6">
+                  {teamMembers.map((member, index) => (
+                    <motion.div key={index} variants={fadeInUp} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 p-4 md:p-5 flex items-center gap-4 md:gap-6 group">
+                      <img src={member.img} alt={member.name} className="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover bg-gray-100 border-2 border-transparent group-hover:border-purple-200 transition-colors" />
+                      <div>
+                        <h4 className="font-bold text-gray-900 text-xl md:text-2xl mb-1">{member.name}</h4>
+                        <p className="text-xs md:text-sm text-purple-700 font-semibold uppercase tracking-wider">{member.role}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ========================================= */}
+          {/* INDIVIDUAL SERVICE PAGES                  */}
+          {/* ========================================= */}
+          {activePage === 'sap' && <ServiceDetailPage data={serviceData.sap} onContactClick={() => setIsContactModalOpen(true)} />}
+          {activePage === 'web' && <ServiceDetailPage data={serviceData.web} onContactClick={() => setIsContactModalOpen(true)} />}
+          {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={() => setIsContactModalOpen(true)} />}
+
+          {/* --- FOOTER --- */}
+          <footer className="bg-[#1a1e29] text-gray-300 pt-12 md:pt-16 pb-6 relative z-40 shadow-2xl">
+            <div className="max-w-7xl mx-auto px-6 md:px-4 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12 mb-10 md:mb-12">
+              <div>
+                <div className="text-white font-bold text-2xl md:text-3xl mb-4 md:mb-6">Anisur<span className="text-purple-500">International</span></div>
+                <div className="flex gap-4">
+                  <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 transition">G</span>
+                  <a 
+                    href="https://www.linkedin.com/company/anisur-international/" 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-blue-600 text-white font-medium hover:text-white transition"
+                  >
+                    in
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-10 md:gap-12">
+                <div>
+                  <h4 className="text-white font-bold mb-4 md:mb-6">About Us</h4>
+                  <ul className="space-y-3 text-sm whitespace-nowrap">
+                    <li><button onClick={() => navigateTo('home')} className="hover:text-purple-400 transition">Home</button></li>
+                    <li><button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-400 transition">About Us</button></li>
+                    <li><button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-400 transition">Services</button></li>
+                    <li><button onClick={() => navigateTo('team')} className="hover:text-purple-400 transition">Team</button></li>
+                    <li><button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Careers</button></li>
+                    <li><button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Contact Us</button></li>
+                  </ul>
+                </div>
+                
+                <div className="hidden sm:block">
+                  <h4 className="text-white font-bold mb-4 md:mb-6">Find Us on Google</h4>
+                  <div className="w-full max-w-[200px] h-32 bg-gray-800 rounded-lg overflow-hidden border border-gray-600 shadow-sm hover:shadow-md transition duration-300">
+                    <iframe
+                      title="Anisur International Location"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.662660143641!2d77.06076297613146!3d28.489728790578613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1921f69661b1%3A0xe5433f0e7d91cb0e!2sAnisur%20International!5e0!3m2!1sen!2sin!4v1715873918074!5m2!1sen!2sin"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-4 md:mb-6">Address</h4>
+                <p className="text-sm leading-relaxed mb-4">
+                  Anisur International<br/>
+                  3rd floor, JDM square,<br/>
+                  Gurgaon- 122102(HR)
+                </p>
+                <p className="text-sm font-semibold text-gray-400">CUSTOMER SUPPORT</p>
+                <a href="mailto:Contact@anisurinternational.com" className="text-purple-400 hover:text-purple-300 text-sm border-b border-purple-400 pb-1 transition break-all">
+                  Contact@anisurinternational.com
+                </a>
+                <p className="text-xs mt-2 text-gray-500">for all Enquiry</p>
+              </div>
+
+              <div>
+                <h4 className="text-white font-bold mb-4 md:mb-6 text-xl">Subscribe us</h4>
+                <p className="text-sm mb-4 text-gray-400">Sign up now and get news about our exclusive tech insights & latest launches.</p>
+                <div className="flex">
+                  <input 
+                    type="email" 
+                    value={subscribeEmail}
+                    onChange={(e) => setSubscribeEmail(e.target.value)}
+                    placeholder="Email address" 
+                    className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 rounded-l outline-none focus:ring-1 focus:ring-purple-500 text-sm" 
+                  />
+                  <button onClick={handleSubscribe} className="bg-purple-700 hover:bg-purple-600 text-white px-3 md:px-4 py-2 rounded-r font-semibold transition cursor-pointer text-sm">
+                    Subscribe
                   </button>
                 </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        {/* ========================================= */}
-        {/* TEAM PAGE                                 */}
-        {/* ========================================= */}
-        {activePage === 'team' && (
-          <div className="min-h-screen bg-gray-50 pt-16 md:pt-20 pb-20 md:pb-28">
-            <div className="max-w-5xl mx-auto px-6 md:px-4">
-              
-              <div className="text-center mb-12 md:mb-16">
-                <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tight mb-4">Leadership & Innovators</h1>
-                <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">The brilliant minds driving Anisur International forward.</p>
-                <div className="w-16 md:w-24 h-1 bg-purple-500 mx-auto rounded-full mt-6"></div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
-                  <img src="/sagar.JPG" alt="CEO" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Sagar Ranga</h3>
-                    <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Chief Executive Officer</p>
-                    <p className="text-gray-500 text-sm leading-relaxed">Visionary leader guiding our global IT strategy and corporate growth.</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col md:flex-row items-center p-6 gap-6 text-center md:text-left">
-                  <img src="/anita.jpg" alt="Director" className="w-32 h-32 md:w-40 md:h-40 rounded-lg object-cover bg-gray-200 flex-shrink-0 shadow-inner" />
-                  <div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Anita Rani</h3>
-                    <p className="text-purple-700 font-bold tracking-wide text-xs md:text-sm uppercase mb-3">Director of Operations</p>
-                    <p className="text-gray-500 text-sm leading-relaxed">Ensuring excellence in delivery, operations, and client success.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 md:gap-6">
-                {teamMembers.map((member, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-gray-100 p-4 md:p-5 flex items-center gap-4 md:gap-6 group">
-                    <img src={member.img} alt={member.name} className="w-16 h-16 md:w-24 md:h-24 rounded-full object-cover bg-gray-100 border-2 border-transparent group-hover:border-purple-200 transition-colors" />
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-xl md:text-2xl mb-1">{member.name}</h4>
-                      <p className="text-xs md:text-sm text-purple-700 font-semibold uppercase tracking-wider">{member.role}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* ========================================= */}
-        {/* INDIVIDUAL SERVICE PAGES                  */}
-        {/* ========================================= */}
-        {activePage === 'sap' && <ServiceDetailPage data={serviceData.sap} onContactClick={() => setIsContactModalOpen(true)} />}
-        {activePage === 'web' && <ServiceDetailPage data={serviceData.web} onContactClick={() => setIsContactModalOpen(true)} />}
-        {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={() => setIsContactModalOpen(true)} />}
-
-        {/* --- FOOTER --- */}
-        <footer className="bg-[#1a1e29] text-gray-300 pt-12 md:pt-16 pb-6 relative z-40 shadow-2xl">
-          <div className="max-w-7xl mx-auto px-6 md:px-4 grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12 mb-10 md:mb-12">
-            <div>
-              <div className="text-white font-bold text-2xl md:text-3xl mb-4 md:mb-6">Anisur<span className="text-purple-500">International</span></div>
-              <div className="flex gap-4">
-                <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 transition">G</span>
-                <a 
-                  href="https://www.linkedin.com/company/anisur-international/" 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-blue-600 text-white font-medium hover:text-white transition"
-                >
-                  in
-                </a>
+                {subscribeStatus && <p className="text-green-400 text-xs mt-2">{subscribeStatus}</p>}
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-10 md:gap-12">
+            <div className="max-w-7xl mx-auto px-6 md:px-4 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 text-center md:text-left gap-4 md:gap-0">
+              <div className="flex flex-wrap justify-center gap-4">
+                <button onClick={() => setIsPrivacyModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Privacy Policy</button>
+                <button onClick={() => setIsCookieModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Cookie Policy</button>
+                <button onClick={() => setIsTermsModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Terms and Conditions</button>
+              </div>
               <div>
-                <h4 className="text-white font-bold mb-4 md:mb-6">About Us</h4>
-                <ul className="space-y-3 text-sm whitespace-nowrap">
-                  <li><button onClick={() => navigateTo('home')} className="hover:text-purple-400 transition">Home</button></li>
-                  <li><button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-400 transition">About Us</button></li>
-                  <li><button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-400 transition">Services</button></li>
-                  <li><button onClick={() => navigateTo('team')} className="hover:text-purple-400 transition">Team</button></li>
-                  <li><button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Careers</button></li>
-                  <li><button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Contact Us</button></li>
-                </ul>
-              </div>
-              
-              <div className="hidden sm:block">
-                <h4 className="text-white font-bold mb-4 md:mb-6">Find Us on Google</h4>
-                <div className="w-full max-w-[200px] h-32 bg-gray-800 rounded-lg overflow-hidden border border-gray-600 shadow-sm hover:shadow-md transition duration-300">
-                  <iframe
-                    title="Anisur International Location"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3506.662660143641!2d77.06076297613146!3d28.489728790578613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1921f69661b1%3A0xe5433f0e7d91cb0e!2sAnisur%20International!5e0!3m2!1sen!2sin!4v1715873918074!5m2!1sen!2sin"
-                  ></iframe>
-                </div>
+                Anisur International @ 2025
               </div>
             </div>
+          </footer>
 
-            <div>
-              <h4 className="text-white font-bold mb-4 md:mb-6">Address</h4>
-              <p className="text-sm leading-relaxed mb-4">
-                Anisur International<br/>
-                3rd floor, JDM square,<br/>
-                Gurgaon- 122102(HR)
-              </p>
-              <p className="text-sm font-semibold text-gray-400">CUSTOMER SUPPORT</p>
-              <a href="mailto:Contact@anisurinternational.com" className="text-purple-400 hover:text-purple-300 text-sm border-b border-purple-400 pb-1 transition break-all">
-                Contact@anisurinternational.com
-              </a>
-              <p className="text-xs mt-2 text-gray-500">for all Enquiry</p>
-            </div>
+        </motion.main>
+      </AnimatePresence>
 
-            <div>
-              <h4 className="text-white font-bold mb-4 md:mb-6 text-xl">Subscribe us</h4>
-              <p className="text-sm mb-4 text-gray-400">Sign up now and get news about our exclusive tech insights & latest launches.</p>
-              <div className="flex">
-                <input 
-                  type="email" 
-                  value={subscribeEmail}
-                  onChange={(e) => setSubscribeEmail(e.target.value)}
-                  placeholder="Email address" 
-                  className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 rounded-l outline-none focus:ring-1 focus:ring-purple-500 text-sm" 
-                />
-                <button onClick={handleSubscribe} className="bg-purple-700 hover:bg-purple-600 text-white px-3 md:px-4 py-2 rounded-r font-semibold transition cursor-pointer text-sm">
-                  Subscribe
-                </button>
-              </div>
-              {subscribeStatus && <p className="text-green-400 text-xs mt-2">{subscribeStatus}</p>}
-            </div>
-          </div>
-
-          <div className="max-w-7xl mx-auto px-6 md:px-4 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 text-center md:text-left gap-4 md:gap-0">
-            <div className="flex flex-wrap justify-center gap-4">
-              <button onClick={() => setIsPrivacyModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Privacy Policy</button>
-              <button onClick={() => setIsCookieModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Cookie Policy</button>
-              <button onClick={() => setIsTermsModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Terms and Conditions</button>
-            </div>
-            <div>
-              Anisur International @ 2025
-            </div>
-          </div>
-        </footer>
-
-      </main>
-
-      {/* FLOATING SOCIAL POPUPS (Slightly smaller on mobile) */}
+      {/* FLOATING SOCIAL POPUPS */}
       <div className="fixed right-4 bottom-4 md:right-6 md:bottom-6 flex flex-col gap-3 md:gap-4 z-50">
         <a 
           href="https://www.linkedin.com/company/anisur-international/" 
@@ -846,7 +894,10 @@ export default function HomePage() {
       {/* WIRED HIRING MODAL POPUP */}
       {isHiringFormOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative max-h-[90vh] overflow-y-auto">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative max-h-[90vh] overflow-y-auto"
+          >
             <button onClick={() => setIsHiringFormOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
@@ -860,21 +911,26 @@ export default function HomePage() {
                 <div className="text-center py-10">
                   <div className="text-green-500 text-5xl mb-4">✓</div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Application Sent!</h3>
-                  <p className="text-gray-600">Thank you for applying. We will review your profile and get back to you shortly.</p>
+                  <p className="text-gray-600">Thank you for applying. Please check your email for a confirmation receipt. We will review your profile and get back to you shortly.</p>
                 </div>
               ) : (
                 <form onSubmit={handleHiringSubmit} className="space-y-4 md:space-y-6">
                   {formStatus === 'error' && <p className="text-red-500 text-sm text-center">Something went wrong. Please check your server connection.</p>}
-                  <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="grid md:grid-cols-3 gap-4 md:gap-6">
                     <div>
                       <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Full Name</label>
                       <input required type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="John Doe" />
+                    </div>
+                    <div>
+                      <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Email</label>
+                      <input required type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="john@example.com" />
                     </div>
                     <div>
                       <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Contact No.</label>
                       <input required type="tel" name="contactNo" value={formData.contactNo} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="+91 98765 43210" />
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Address</label>
                     <input required type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="City, State" />
@@ -903,14 +959,17 @@ export default function HomePage() {
                 </form>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* CONTACT US MODAL POPUP */}
       {isContactModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative"
+          >
             <button onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
@@ -941,7 +1000,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
