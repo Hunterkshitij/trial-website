@@ -185,7 +185,7 @@ const FloatingClients = ({ clients }) => {
         const pos = positions[i % positions.length];
         return (
           <div key={i} ref={(el) => (wrapperRefs.current[i] = el)} className="absolute z-20 will-change-transform" style={{ top: pos.top, left: pos.left }}>
-            <div className="w-24 h-24 md:w-32 md:h-28 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-4 flex items-center justify-center border border-gray-50 hover:scale-110 hover:shadow-2xl transition-all duration-300 cursor-pointer" style={{ animation: `gentleFloat ${5 + (i % 3)}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>
+            <div className="w-20 h-20 md:w-32 md:h-28 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-3 md:p-4 flex items-center justify-center border border-gray-50 hover:scale-110 hover:shadow-2xl transition-all duration-300 cursor-pointer" style={{ animation: `gentleFloat ${5 + (i % 3)}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>
               <img src={client.img} alt={client.name} className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition duration-300" />
             </div>
           </div>
@@ -400,6 +400,7 @@ export default function HomePage() {
     { name: "Pooja Dahiya", role: "Team Member", img: "/pooja.JPG" }
   ];
 
+
   const clients = [
     { name: "JDMH", img: "/jdmh.jpg" }, { name: "IPB", img: "/ipb.jpg" }, { name: "JMS", img: "/jms.jpg" },
     { name: "TS", img: "/ts.jpg" }, { name: "GF", img: "/gf.jpg" }, { name: "Aureus", img: "/aureus.jpg" },
@@ -558,11 +559,6 @@ export default function HomePage() {
                     <motion.p variants={fadeInUp} className="text-base md:text-xl text-gray-700 mb-10 max-w-lg leading-relaxed font-medium">
                       Unlock new possibilities with our tailored IT solutions. We streamline processes, optimize performance, and drive growth with advanced digital technologies.
                     </motion.p>
-                    <motion.div variants={fadeInUp}>
-                      <button onClick={() => navigateTo('home', 'about-intro')} className="bg-purple-700 text-white px-8 md:px-10 py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition shadow-[0_10px_20px_rgba(107,33,168,0.3)] inline-block hover:-translate-y-1 transform w-full md:w-auto text-center">
-                        Learn More
-                      </button>
-                    </motion.div>
                   </motion.div>
                 </div>
               </section>
@@ -575,7 +571,7 @@ export default function HomePage() {
                   </motion.div>
 
                   <div className="relative pb-16 md:pb-32">
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-32 z-10 w-full mb-8 md:mb-[30vh]">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="sticky top-24 md:top-32 z-10 w-full mb-[15vh] md:mb-[30vh]">
                       <div className="bg-purple-600/10 backdrop-blur-xl border border-purple-500/20 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
                         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                           <div className="flex-shrink-0 w-16 h-16 bg-purple-600/20 rounded-2xl flex items-center justify-center text-purple-700 text-3xl shadow-sm">🌍</div>
@@ -589,7 +585,7 @@ export default function HomePage() {
                       </div>
                     </motion.div>
 
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-40 z-20 w-full mb-8 md:mb-[30vh]">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="sticky top-32 md:top-40 z-20 w-full mb-[15vh] md:mb-[30vh]">
                       <div className="bg-purple-700/15 backdrop-blur-xl border border-purple-500/30 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
                         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                           <div className="flex-shrink-0 w-16 h-16 bg-purple-700/20 rounded-2xl flex items-center justify-center text-purple-800 text-3xl shadow-sm">🎯</div>
@@ -603,7 +599,7 @@ export default function HomePage() {
                       </div>
                     </motion.div>
 
-                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="md:sticky md:top-48 z-30 w-full mb-8 md:mb-12">
+                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeInUp} className="sticky top-40 md:top-48 z-30 w-full mb-8 md:mb-12">
                       <div className="bg-purple-800/20 backdrop-blur-xl border border-purple-500/40 shadow-xl md:shadow-2xl rounded-3xl p-6 md:p-12 transition-all duration-300">
                         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8">
                           <div className="flex-shrink-0 w-16 h-16 bg-purple-800/20 rounded-2xl flex items-center justify-center text-purple-900 text-3xl shadow-sm">🤝</div>
@@ -676,7 +672,7 @@ export default function HomePage() {
                 </div>
               </section>
 
-              <div id="clients" className="hidden md:block">
+              <div id="clients">
                 <FloatingClients clients={clients} />
               </div>
 
