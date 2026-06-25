@@ -354,7 +354,7 @@ export default function HomePage() {
   const [activePage, setActivePage] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const validPages = ['home', 'team', 'sap', 'web', 'app'];
+      const validPages = ['home', 'team', 'sap', 'web', 'app', 'marketing'];
       const pageParam = params.get('page');
       return validPages.includes(pageParam) ? pageParam : 'home';
     }
@@ -471,7 +471,7 @@ export default function HomePage() {
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const validPages = ['home', 'team', 'sap', 'web', 'app'];
+      const validPages = ['home', 'team', 'sap', 'web', 'app', 'marketing'];
       const pageParam = params.get('page');
       setActivePage(validPages.includes(pageParam) ? pageParam : 'home');
     };
@@ -527,6 +527,15 @@ export default function HomePage() {
       para1: "We provide comprehensive mobile application development services focused on creating innovative, scalable, and user-friendly digital solutions that help businesses improve customer engagement, operational efficiency, and overall business performance. Our expertise includes native and cross-platform mobile applications for iOS and Android platforms, enterprise mobility solutions, cloud-connected applications, API integrations, application modernization, performance optimization, and ongoing support services.",
       para2: "Our experienced team of mobile developers, UI/UX designers, and technology consultants works closely with clients to understand their business goals and deliver customized applications that provide seamless functionality, intuitive user experiences, and high performance. From initial strategy and concept design to development, testing, deployment, and maintenance, we manage the complete mobile app lifecycle using agile methodologies and modern development frameworks.",
       para3: "We focus on delivering secure, reliable, and future-ready applications that support digital transformation and business growth. By leveraging the latest mobile technologies and industry best practices, we help organizations streamline workflows, enhance accessibility, improve user interaction, and strengthen their digital presence. Our commitment to quality, innovation, and customer satisfaction ensures that every mobile application we develop delivers measurable value and long-term success for our clients."
+    },
+    marketing: {
+      title: "Digital Marketing Services",
+      heroImg: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2000",
+      img1: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&q=80&w=800",
+      img2: "https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&q=80&w=800",
+      para1: "We deliver comprehensive digital marketing services designed to help businesses expand their online presence, attract qualified audiences, and convert engagement into measurable growth. Our expertise spans search engine optimization (SEO), pay-per-click (PPC) and performance advertising, social media marketing, content strategy, email marketing, and conversion rate optimization. We craft data-driven campaigns tailored to each client's industry, audience, and objectives, ensuring every marketing investment delivers the highest possible return.",
+      para2: "Our team of digital strategists, content creators, performance marketers, and analytics specialists combines creativity with rigorous data analysis to design campaigns that build brand awareness and drive demand. From keyword research, audience targeting, and creative development to campaign launch, A/B testing, and continuous optimization, we manage the full marketing lifecycle. We leverage leading platforms such as Google Ads, Meta, and LinkedIn alongside modern analytics tools to track performance in real time and refine strategy for sustained impact.",
+      para3: "We are committed to transparent reporting and measurable outcomes. Through detailed dashboards, regular performance reviews, and clearly defined KPIs—covering traffic, leads, engagement, and return on investment—we keep our clients informed at every stage of the campaign. Our goal is to build long-term partnerships that help organizations strengthen their brand, grow their customer base, and stay competitive in an ever-evolving digital marketplace."
     }
   };
 
@@ -740,7 +749,7 @@ export default function HomePage() {
                     initial="hidden" 
                     whileInView="visible" 
                     viewport={{ once: true, margin: "-50px" }}
-                    className="grid md:grid-cols-3 gap-6 md:gap-8"
+                    className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
                   >
                     <motion.div variants={fadeInUp} onClick={() => navigateTo('sap')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
                       <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">⚙️</div>
@@ -760,6 +769,13 @@ export default function HomePage() {
                       <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">📱</div>
                       <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">App Development</h3>
                       <p className="text-gray-600 mb-2">Native & cross-platform applications.</p>
+                      <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
+                    </motion.div>
+
+                    <motion.div variants={fadeInUp} onClick={() => navigateTo('marketing')} className="cursor-pointer bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-purple-300 hover:-translate-y-2 transition-all duration-300 group">
+                      <div className="bg-purple-700 group-hover:bg-purple-800 transition-colors w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-md">📈</div>
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-purple-700 transition-colors">Digital Marketing</h3>
+                      <p className="text-gray-600 mb-2">SEO, social media & performance marketing.</p>
                       <span className="text-purple-600 font-bold text-sm mt-4 inline-block opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">Learn More →</span>
                     </motion.div>
                   </motion.div>
@@ -864,6 +880,7 @@ export default function HomePage() {
           {activePage === 'sap' && <ServiceDetailPage data={serviceData.sap} onContactClick={openContactModal} />}
           {activePage === 'web' && <ServiceDetailPage data={serviceData.web} onContactClick={openContactModal} />}
           {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={openContactModal} />}
+          {activePage === 'marketing' && <ServiceDetailPage data={serviceData.marketing} onContactClick={openContactModal} />}
 
           {/* --- FOOTER --- */}
           <footer className="bg-[#1a1e29] text-gray-300 pt-12 md:pt-16 pb-6 relative z-40 shadow-2xl">
