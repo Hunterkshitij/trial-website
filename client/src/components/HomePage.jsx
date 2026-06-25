@@ -1,5 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+
+// --- API CONFIG ---
+const API_BASE = 'https://trial-website-l3l1.onrender.com';
+
+// Fetch wrapper with an abort timeout so a cold-starting free-tier server
+// doesn't leave the UI hanging indefinitely.
+const postJSON = (path, body, timeoutMs = 60000) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timer));
+};
+
+// Ping the backend so the free-tier server starts waking up before a form submit.
+const warmUpServer = () => {
+  fetch(`${API_BASE}/`, { method: 'GET' }).catch(() => {});
+};
 
 // --- ANIMATION VARIANTS (High-Quality Easing) ---
 const easing = [0.6, -0.05, 0.01, 0.99];
@@ -25,6 +46,7 @@ const pageTransition = {
 
 // --- 1. Falling Petals Animation (Initial Visit Only) ---
 const FallingPetals = () => {
+  const prefersReducedMotion = useReducedMotion();
   const [visible, setVisible] = useState(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem('petalsDropped');
@@ -39,7 +61,7 @@ const FallingPetals = () => {
     return () => clearTimeout(timer);
   }, [visible]);
 
-  if (!visible) return null;
+  if (prefersReducedMotion || !visible) return null;
 
   const petals = Array.from({ length: 35 }).map((_, i) => {
     const left = Math.random() * 100; 
@@ -112,11 +134,13 @@ const AnimatedCounter = ({ end, suffix, trigger }) => {
 
 // --- 3. Interactive Floating Clients Component ---
 const FloatingClients = ({ clients }) => {
+  const prefersReducedMotion = useReducedMotion();
   const sectionRef = useRef(null);
   const wrapperRefs = useRef([]);
   const ticking = useRef(false);
 
   useEffect(() => {
+    if (prefersReducedMotion) return; // skip parallax for reduced-motion users
     const handleScroll = () => {
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
@@ -147,7 +171,7 @@ const FloatingClients = ({ clients }) => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); 
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [prefersReducedMotion]);
 
   const positions = [
     { top: '10%', left: '8%', speed: 1.4 },
@@ -185,7 +209,7 @@ const FloatingClients = ({ clients }) => {
         const pos = positions[i % positions.length];
         return (
           <div key={i} ref={(el) => (wrapperRefs.current[i] = el)} className="absolute z-20 will-change-transform" style={{ top: pos.top, left: pos.left }}>
-            <div className="w-20 h-20 md:w-32 md:h-28 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-3 md:p-4 flex items-center justify-center border border-gray-50 hover:scale-110 hover:shadow-2xl transition-all duration-300 cursor-pointer" style={{ animation: `gentleFloat ${5 + (i % 3)}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>
+            <div className="w-20 h-20 md:w-32 md:h-28 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] p-3 md:p-4 flex items-center justify-center border border-gray-50 hover:scale-110 hover:shadow-2xl transition-all duration-300 cursor-pointer" style={prefersReducedMotion ? {} : { animation: `gentleFloat ${5 + (i % 3)}s ease-in-out infinite`, animationDelay: `${i * 0.4}s` }}>
               <img src={client.img} alt={client.name} className="max-h-full max-w-full object-contain grayscale hover:grayscale-0 opacity-70 hover:opacity-100 transition duration-300" />
             </div>
           </div>
@@ -286,6 +310,45 @@ const ServiceDetailPage = ({ data, onContactClick }) => {
 };
 
 
+// --- 6. Cookie Consent Banner ---
+const CookieConsent = ({ onLearnMore }) => {
+  const [visible, setVisible] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('cookieConsent');
+    }
+    return false;
+  });
+
+  const accept = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setVisible(false);
+  };
+
+  return (
+    <AnimatePresence>
+      {visible && (
+      <motion.div
+        initial={{ y: 120, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 120, opacity: 0 }}
+        transition={{ duration: 0.4, ease: easing }}
+        className="fixed bottom-0 left-0 right-0 z-[90] p-4 md:p-6"
+        role="region"
+        aria-label="Cookie consent"
+      >
+        <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.2)] border border-gray-100 p-5 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <p className="text-sm text-gray-600 leading-relaxed text-center md:text-left flex-1">
+            🍪 We use cookies to enhance your browsing experience and analyze site traffic. By continuing to use our site, you consent to our use of cookies.{' '}
+            <button onClick={onLearnMore} className="text-purple-700 font-semibold hover:text-purple-900 underline transition cursor-pointer">Learn more</button>
+          </p>
+          <button onClick={accept} className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition shadow-md whitespace-nowrap cursor-pointer flex-shrink-0">
+            Accept
+          </button>
+        </div>
+      </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- MAIN HOMEPAGE COMPONENT ---
 export default function HomePage() {
   const [activePage, setActivePage] = useState(() => {
@@ -314,6 +377,8 @@ export default function HomePage() {
   const [formStatus, setFormStatus] = useState(null); 
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState(null);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' });
+  const [contactStatus, setContactStatus] = useState(null);
 
   const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -321,11 +386,7 @@ export default function HomePage() {
     e.preventDefault();
     setFormStatus('submitting');
     try {
-      const response = await fetch('https://trial-website-l3l1.onrender.com/api/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
+      const response = await postJSON('/api/apply', formData);
       if (response.ok) {
         setFormStatus('success');
         setTimeout(() => {
@@ -344,20 +405,51 @@ export default function HomePage() {
 
   const handleSubscribe = async () => {
     if (!subscribeEmail) return;
+    setSubscribeStatus('submitting');
     try {
-      const response = await fetch('https://trial-website-l3l1.onrender.com/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: subscribeEmail })
-      });
+      const response = await postJSON('/api/subscribe', { email: subscribeEmail });
       if (response.ok) {
-        setSubscribeStatus('Success!');
+        setSubscribeStatus('success');
         setSubscribeEmail('');
-        setTimeout(() => setSubscribeStatus(null), 3000);
+        setTimeout(() => setSubscribeStatus(null), 4000);
+      } else {
+        setSubscribeStatus('error');
       }
     } catch (error) {
       console.error('Subscription Error:', error);
+      setSubscribeStatus('error');
     }
+  };
+
+  const handleContactChange = (e) => setContactForm({ ...contactForm, [e.target.name]: e.target.value });
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    setContactStatus('submitting');
+    try {
+      const response = await postJSON('/api/contact', contactForm);
+      if (response.ok) {
+        setContactStatus('success');
+        setContactForm({ name: '', email: '', phone: '', message: '' });
+      } else {
+        setContactStatus('error');
+      }
+    } catch (error) {
+      console.error('Contact Error:', error);
+      setContactStatus('error');
+    }
+  };
+
+  const openHiringModal = () => {
+    setFormStatus(null);
+    warmUpServer();
+    setIsHiringFormOpen(true);
+  };
+
+  const openContactModal = () => {
+    setContactStatus(null);
+    warmUpServer();
+    setIsContactModalOpen(true);
   };
 
   useEffect(() => {
@@ -454,12 +546,12 @@ export default function HomePage() {
   };
 
   const handleMobileCareerClick = () => {
-    setIsHiringFormOpen(true);
+    openHiringModal();
     setIsMobileMenuOpen(false);
   };
 
   const handleMobileContactClick = () => {
-    setIsContactModalOpen(true);
+    openContactModal();
     setIsMobileMenuOpen(false);
   };
 
@@ -481,9 +573,11 @@ export default function HomePage() {
             </span>
           </div>
 
-          <button 
+          <button
             className="md:hidden text-gray-800 text-3xl z-50 focus:outline-none"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? '×' : '≡'}
           </button>
@@ -494,10 +588,10 @@ export default function HomePage() {
             <button onClick={() => navigateTo('team')} className={`hover:text-purple-700 transition whitespace-nowrap ${activePage === 'team' ? 'text-purple-700' : ''}`}>
               Team
             </button>
-            <button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
+            <button onClick={openHiringModal} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
               Careers
             </button>
-            <button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
+            <button onClick={openContactModal} className="hover:text-purple-700 transition cursor-pointer whitespace-nowrap">
               Contact Us
             </button>
           </div>
@@ -704,7 +798,7 @@ export default function HomePage() {
                     </div>
                     
                     <button 
-                      onClick={() => setIsContactModalOpen(true)} 
+                      onClick={openContactModal} 
                       className="group flex items-center gap-3 text-sm font-bold tracking-[0.15em] text-gray-900 uppercase hover:text-purple-700 transition cursor-pointer border-b border-gray-900 hover:border-purple-700 pb-1 w-max"
                     >
                       Contact Us <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
@@ -767,9 +861,9 @@ export default function HomePage() {
           {/* ========================================= */}
           {/* INDIVIDUAL SERVICE PAGES                  */}
           {/* ========================================= */}
-          {activePage === 'sap' && <ServiceDetailPage data={serviceData.sap} onContactClick={() => setIsContactModalOpen(true)} />}
-          {activePage === 'web' && <ServiceDetailPage data={serviceData.web} onContactClick={() => setIsContactModalOpen(true)} />}
-          {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={() => setIsContactModalOpen(true)} />}
+          {activePage === 'sap' && <ServiceDetailPage data={serviceData.sap} onContactClick={openContactModal} />}
+          {activePage === 'web' && <ServiceDetailPage data={serviceData.web} onContactClick={openContactModal} />}
+          {activePage === 'app' && <ServiceDetailPage data={serviceData.app} onContactClick={openContactModal} />}
 
           {/* --- FOOTER --- */}
           <footer className="bg-[#1a1e29] text-gray-300 pt-12 md:pt-16 pb-6 relative z-40 shadow-2xl">
@@ -777,11 +871,20 @@ export default function HomePage() {
               <div>
                 <div className="text-white font-bold text-2xl md:text-3xl mb-4 md:mb-6">Anisur<span className="text-purple-500">International</span></div>
                 <div className="flex gap-4">
-                  <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 transition">G</span>
-                  <a 
-                    href="https://www.linkedin.com/company/anisur-international/" 
-                    target="_blank" 
-                    rel="noreferrer" 
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Anisur+International+Gurgaon"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Find Anisur International on Google Maps"
+                    className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-purple-600 text-white transition"
+                  >
+                    G
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/company/anisur-international/"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Anisur International on LinkedIn"
                     className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer hover:bg-blue-600 text-white font-medium hover:text-white transition"
                   >
                     in
@@ -797,8 +900,8 @@ export default function HomePage() {
                     <li><button onClick={() => navigateTo('home', 'about-intro')} className="hover:text-purple-400 transition">About Us</button></li>
                     <li><button onClick={() => navigateTo('home', 'services')} className="hover:text-purple-400 transition">Services</button></li>
                     <li><button onClick={() => navigateTo('team')} className="hover:text-purple-400 transition">Team</button></li>
-                    <li><button onClick={() => setIsHiringFormOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Careers</button></li>
-                    <li><button onClick={() => setIsContactModalOpen(true)} className="hover:text-purple-400 transition cursor-pointer">Contact Us</button></li>
+                    <li><button onClick={openHiringModal} className="hover:text-purple-400 transition cursor-pointer">Careers</button></li>
+                    <li><button onClick={openContactModal} className="hover:text-purple-400 transition cursor-pointer">Contact Us</button></li>
                   </ul>
                 </div>
                 
@@ -841,14 +944,16 @@ export default function HomePage() {
                     type="email" 
                     value={subscribeEmail}
                     onChange={(e) => setSubscribeEmail(e.target.value)}
-                    placeholder="Email address" 
+                    placeholder="Email address"
+                    aria-label="Email address"
                     className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 rounded-l outline-none focus:ring-1 focus:ring-purple-500 text-sm" 
                   />
-                  <button onClick={handleSubscribe} className="bg-purple-700 hover:bg-purple-600 text-white px-3 md:px-4 py-2 rounded-r font-semibold transition cursor-pointer text-sm">
-                    Subscribe
+                  <button onClick={handleSubscribe} disabled={subscribeStatus === 'submitting'} className="bg-purple-700 hover:bg-purple-600 text-white px-3 md:px-4 py-2 rounded-r font-semibold transition cursor-pointer text-sm disabled:opacity-60">
+                    {subscribeStatus === 'submitting' ? '...' : 'Subscribe'}
                   </button>
                 </div>
-                {subscribeStatus && <p className="text-green-400 text-xs mt-2">{subscribeStatus}</p>}
+                {subscribeStatus === 'success' && <p className="text-green-400 text-xs mt-2">✓ Subscribed! Thanks for signing up.</p>}
+                {subscribeStatus === 'error' && <p className="text-red-400 text-xs mt-2">Something went wrong. Please try again.</p>}
               </div>
             </div>
 
@@ -869,18 +974,20 @@ export default function HomePage() {
 
       {/* FLOATING SOCIAL POPUPS */}
       <div className="fixed right-4 bottom-4 md:right-6 md:bottom-6 flex flex-col gap-3 md:gap-4 z-50">
-        <a 
-          href="https://www.linkedin.com/company/anisur-international/" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://www.linkedin.com/company/anisur-international/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Anisur International on LinkedIn"
           className="bg-blue-600 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center font-bold text-lg md:text-xl"
         >
           in
         </a>
-        <a 
-          href="https://wa.me/919911309695?text=Hello%20Anisur%20International!" 
-          target="_blank" 
-          rel="noreferrer" 
+        <a
+          href="https://wa.me/919911309695?text=Hello%20Anisur%20International!"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Chat with us on WhatsApp"
           className="bg-green-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center text-xl md:text-2xl"
         >
           💬
@@ -894,7 +1001,7 @@ export default function HomePage() {
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative max-h-[90vh] overflow-y-auto"
           >
-            <button onClick={() => setIsHiringFormOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
+            <button onClick={() => setIsHiringFormOpen(false)} aria-label="Close application form" className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
             <div className="p-6 md:p-12">
@@ -907,7 +1014,7 @@ export default function HomePage() {
                 <div className="text-center py-10">
                   <div className="text-green-500 text-5xl mb-4">✓</div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">Application Sent!</h3>
-                  <p className="text-gray-600">Thank you for applying. Please check your email for a confirmation receipt. We will review your profile and get back to you shortly.</p>
+                  <p className="text-gray-600">Thank you for applying. Our team will review your profile and get back to you shortly.</p>
                 </div>
               ) : (
                 <form onSubmit={handleHiringSubmit} className="space-y-4 md:space-y-6">
@@ -952,6 +1059,7 @@ export default function HomePage() {
                   <button type="submit" disabled={formStatus === 'submitting'} className="w-full bg-purple-700 text-white font-bold py-3 md:py-4 rounded-lg hover:bg-purple-800 transition shadow-md text-base md:text-lg cursor-pointer flex justify-center items-center">
                     {formStatus === 'submitting' ? 'Submitting...' : 'Submit Application'}
                   </button>
+                  {formStatus === 'submitting' && <p className="text-xs text-gray-400 text-center">This can take up to a minute if our server is waking up.</p>}
                 </form>
               )}
             </div>
@@ -962,39 +1070,67 @@ export default function HomePage() {
       {/* CONTACT US MODAL POPUP */}
       {isContactModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto"
           >
-            <button onClick={() => setIsContactModalOpen(false)} className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
+            <button onClick={() => { setIsContactModalOpen(false); setContactStatus(null); }} aria-label="Close contact form" className="absolute top-4 right-4 md:right-6 text-4xl text-gray-400 hover:text-gray-800 transition z-50 leading-none cursor-pointer">
               ×
             </button>
-            <div className="p-8 md:p-12 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Contact Us</h2>
-              <div className="space-y-5 text-base md:text-lg text-gray-700">
+            <div className="p-8 md:p-12">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Contact Us</h2>
+              <p className="text-center font-extrabold text-lg md:text-xl text-purple-800 tracking-tight mb-6">Anisur International</p>
+
+              <div className="grid sm:grid-cols-3 gap-4 mb-8 text-center sm:text-left border-y border-gray-100 py-6">
                 <div>
-                  <p className="font-extrabold text-xl md:text-2xl text-purple-800 tracking-tight">Anisur International</p>
-                  <p className="mt-2 text-sm md:text-base text-gray-600">
-                    3rd floor, JDM square,<br/>
-                    Gurgaon- 122102(HR)
-                  </p>
+                  <p className="font-semibold text-gray-500 text-xs uppercase tracking-wider mb-1">Office</p>
+                  <p className="text-sm text-gray-700">3rd floor, JDM square,<br/>Gurgaon- 122102(HR)</p>
                 </div>
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="font-semibold text-gray-500 text-xs md:text-sm uppercase tracking-wider mb-1">Phone</p>
-                  <a href="tel:+917082145140" className="text-purple-700 font-bold text-lg md:text-xl hover:text-purple-900 transition">
-                    +91-7082145140
-                  </a>
+                <div>
+                  <p className="font-semibold text-gray-500 text-xs uppercase tracking-wider mb-1">Phone</p>
+                  <a href="tel:+917082145140" className="text-sm text-purple-700 font-semibold hover:text-purple-900 transition">+91-7082145140</a>
                 </div>
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="font-semibold text-gray-500 text-xs md:text-sm uppercase tracking-wider mb-2">Email</p>
-                  <a href="mailto:Hr@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition mb-1 text-sm md:text-base break-all">
-                    Hr@anisurinternational.com
-                  </a>
-                  <a href="mailto:Contact@anisurinternational.com" className="block text-purple-700 font-medium hover:text-purple-900 transition text-sm md:text-base break-all">
-                    Contact@anisurinternational.com
-                  </a>
+                <div>
+                  <p className="font-semibold text-gray-500 text-xs uppercase tracking-wider mb-1">Email</p>
+                  <a href="mailto:Hr@anisurinternational.com" className="block text-sm text-purple-700 font-semibold hover:text-purple-900 transition break-all">Hr@anisurinternational.com</a>
+                  <a href="mailto:Contact@anisurinternational.com" className="block text-sm text-purple-700 font-semibold hover:text-purple-900 transition break-all">Contact@anisurinternational.com</a>
                 </div>
               </div>
+
+              {contactStatus === 'success' ? (
+                <div className="text-center py-8">
+                  <div className="text-green-500 text-5xl mb-3">✓</div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">Message Sent!</h3>
+                  <p className="text-gray-600 text-sm">Thank you for reaching out. Our team will get back to you shortly.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <p className="text-sm text-gray-500 text-center">Or send us a message directly:</p>
+                  {contactStatus === 'error' && <p className="text-red-500 text-sm text-center">Something went wrong. Please try again.</p>}
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Name</label>
+                      <input required type="text" name="name" value={contactForm.name} onChange={handleContactChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="Your name" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Email</label>
+                      <input required type="email" name="email" value={contactForm.email} onChange={handleContactChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="you@example.com" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Phone (optional)</label>
+                    <input type="tel" name="phone" value={contactForm.phone} onChange={handleContactChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="+91 98765 43210" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Message</label>
+                    <textarea required name="message" rows="4" value={contactForm.message} onChange={handleContactChange} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-purple-600 outline-none transition text-sm" placeholder="How can we help you?"></textarea>
+                  </div>
+                  <button type="submit" disabled={contactStatus === 'submitting'} className="w-full bg-purple-700 text-white font-bold py-3 rounded-lg hover:bg-purple-800 transition shadow-md cursor-pointer flex justify-center items-center">
+                    {contactStatus === 'submitting' ? 'Sending…' : 'Send Message'}
+                  </button>
+                  {contactStatus === 'submitting' && <p className="text-xs text-gray-400 text-center">This can take up to a minute if our server is waking up.</p>}
+                </form>
+              )}
             </div>
           </motion.div>
         </div>
@@ -1047,6 +1183,8 @@ export default function HomePage() {
         <h3 className="text-lg font-bold mt-4 mb-2 text-gray-900">4. Governing Law & Jurisdiction</h3>
         <p>These Terms will be governed by and interpreted in accordance with the laws of Haryana, India, and you submit to the non-exclusive jurisdiction of the state and federal courts located in India for the resolution of any disputes.</p>
       </PolicyModal>
+
+      <CookieConsent onLearnMore={() => setIsCookieModalOpen(true)} />
 
     </div>
   );
